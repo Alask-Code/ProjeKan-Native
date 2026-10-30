@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "ProjeKan",
+    "slug": "projekan-manager",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "softwareKeyboardLayoutMode": "resize",
+      "package": "com.projekan.manager"
+    },
+    "plugins": [
+      "expo-status-bar",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permita que ProjeKan escolha fotos para o perfil, os logos e as capas dos projetos.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c44dc601-2cf9-4f5b-a1f1-3ef7ee633b25"
+      }
+    },
+    "icon": "./src/assets/projekan-icon.png"
+  }
+}

@@ -1,0 +1,50 @@
+import React, { useRef, useState } from "react";
+import { Animated, Pressable, ScrollView, Text, View } from "react-native";
+import { Project, ProjectStatus } from "../stores/nativeProjectStore";
+import { ThemeSettings } from "../stores/themeStore";
+import { columns } from "../constants/app";
+import { ProjectCard, DragPreviewCard } from "../components/project/ProjectCard";
+import { useBoardDrag } from "../hooks/useBoardDrag";
+import { Action, Body, Eyebrow, Title } from "../components/ui";
+import { fontFamily } from "../utils/theme";
+export function BoardScreen({ projects, theme, onCreate, onOpen, onMoveToPosition }: { projects: Project[]; theme: ThemeSettings; onCreate: () => void; onOpen: (id: number) => void; onMoveToPosition: (id: number, status: ProjectStatus, index: number) => void }) {
+  const { rootRef, boardRef, dragPosition, dragLiftProgress, draggingId, isDropping, settlingId, dragSize, dropPreview, registerColumn, registerViewport, registerCard, startDrag, updateDrag, finishDrag, cancelDrag, draggedProject, rootWindow, boardWindowX, boardScrollX, columnViewports } = useBoardDrag(projects, onMoveToPosition);
+  return <View ref={rootRef} onLayout={() => rootRef.current?.measureInWindow((x, y) => { rootWindow.current = { x, y }; })} className="flex-1 pt-4" style={{ overflow: "visible" }}>
+    <View className="mb-4 flex-row items-start justify-between px-4"><View className="flex-1 pr-2"><Eyebrow theme={theme}>VISÃO GERAL</Eyebrow><Title theme={theme}>Seus projetos</Title><Body theme={theme}>Segure e arraste: vertical para reorganizar · horizontal para trocar de coluna</Body></View><Action theme={theme} onPress={onCreate}>＋ Novo projeto</Action></View>
+    <ScrollView ref={boardRef} className="flex-1" horizontal removeClippedSubviews={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 10, overflow: "visible" }} scrollEventThrottle={16} onLayout={() => boardRef.current?.measureInWindow((x) => { boardWindowX.current = x; })} onScroll={(event) => { boardScrollX.current = event.nativeEvent.contentOffset.x; }}>
+      {columns.map((column) => <BoardColumn key={column.key} column={column} projects={projects.filter((project) => (project.status ?? "unstarted") === column.key).sort((a, b) => (a.sortOrder ?? projects.findIndex((project) => project.id === a.id)) - (b.sortOrder ?? projects.findIndex((project) => project.id === b.id)))} theme={theme} onOpen={onOpen} onColumnLayout={registerColumn} onViewportLayout={registerViewport} onColumnScroll={(status, scrollY) => { const current = columnViewports.current[status]; columnViewports.current[status] = { y: current?.y ?? 0, scrollY }; }} onCardLayout={registerCard} draggingId={draggingId} isDropping={isDropping} settlingId={settlingId} dropPreview={dropPreview} onDragStart={startDrag} onDragMove={updateDrag} onDragEnd={finishDrag} onDragCancel={cancelDrag} />)}
+    </ScrollView>
+    {draggedProject && dragSize ? <Animated.View pointerEvents="none" className="absolute left-0 top-0" style={{ width: dragSize.width, height: dragSize.height, zIndex: 1000, elevation: 32, opacity: dragLiftProgress.interpolate({ inputRange: [0, 1], outputRange: [0.65, 1] }), transform: [{ translateX: dragPosition.x }, { translateY: dragPosition.y }, { scale: dragLiftProgress.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1.035] }) }] }}><Animated.View style={{ position: "absolute", top: -9, left: -9, right: -9, bottom: -9, borderRadius: theme.borderRadius + 9, backgroundColor: "#168BFF", opacity: dragLiftProgress.interpolate({ inputRange: [0, 1], outputRange: [0, 0.3] }), elevation: 32, shadowColor: "#168BFF", shadowOpacity: 0.95, shadowRadius: 24, shadowOffset: { width: 0, height: 0 } }} /><DragPreviewCard project={{ ...draggedProject, status: dropPreview?.status ?? draggedProject.status }} theme={theme} /></Animated.View> : null}
+  </View>;
+}
+
+export function BoardColumn({ column, projects, theme, onOpen, onColumnLayout, onViewportLayout, onColumnScroll, onCardLayout, draggingId, isDropping, settlingId, dropPreview, onDragStart, onDragMove, onDragEnd, onDragCancel }: { column: (typeof columns)[number]; projects: Project[]; theme: ThemeSettings; onOpen: (id: number) => void; onColumnLayout: (status: ProjectStatus, x: number, width: number) => void; onViewportLayout: (status: ProjectStatus, y: number) => void; onColumnScroll: (status: ProjectStatus, scrollY: number) => void; onCardLayout: (status: ProjectStatus, id: number, y: number, height: number, width: number) => void; draggingId: number | null; isDropping: boolean; settlingId: number | null; dropPreview: { id: number; status: ProjectStatus; index: number; width: number; height: number } | null; onDragStart: (id: number, pageX: number, pageY: number, localX: number, localY: number) => void; onDragMove: (id: number, pageX: number, pageY: number, localX: number, localY: number) => void; onDragEnd: (id: number, pageX: number, pageY: number) => void; onDragCancel: () => void }) {
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const [showTopButton, setShowTopButton] = useState(false);
+  // Keep the active GestureDetector mounted for the full pan gesture. The
+  // dragged card is taken out of layout flow so only the drop slot occupies
+  // space in the column while it is being moved.
+  const visibleProjects = projects.filter((project) => !(isDropping && project.id === draggingId));
+  const showDropSlot = dropPreview?.status === column.key;
+  const renderDropSlot = () => showDropSlot && dropPreview ? <View key="drop-preview" pointerEvents="none" className="mb-2.5 items-center justify-center" style={{ height: dropPreview.height, borderColor: theme.primary, borderWidth: 2, borderStyle: "dashed", borderRadius: theme.borderRadius, backgroundColor: theme.raised }}><Text style={{ color: theme.primary }} className="text-xs font-bold">Soltar aqui</Text></View> : null;
+  let previewIndex = 0;
+  const cardRows = visibleProjects.map((project) => {
+    const isDragged = draggingId === project.id;
+    const insertBefore = showDropSlot && !isDragged && dropPreview?.index === previewIndex;
+    const row = <React.Fragment key={project.id}>{insertBefore ? renderDropSlot() : null}<ProjectCard project={project} theme={theme} isDragging={isDragged} isSettling={settlingId === project.id} onPress={() => onOpen(project.id)} onLayout={(y, height, width) => onCardLayout(column.key, project.id, y, height, width)} onDragStart={(pageX, pageY, localX, localY) => onDragStart(project.id, pageX, pageY, localX, localY)} onDragMove={(pageX, pageY, localX, localY) => onDragMove(project.id, pageX, pageY, localX, localY)} onDragEnd={(pageX, pageY) => onDragEnd(project.id, pageX, pageY)} onDragCancel={onDragCancel} /></React.Fragment>;
+    if (!isDragged) previewIndex += 1;
+    return row;
+  });
+  const previewAtEnd = showDropSlot && dropPreview?.index === previewIndex;
+  return <View onLayout={(event) => onColumnLayout(column.key, event.nativeEvent.layout.x, event.nativeEvent.layout.width)} className="relative mr-3 h-full w-[280px] p-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius, overflow: "visible", zIndex: 1 }}>
+    <View className="mb-3 flex-row items-center gap-2 px-1"><View className="h-2 w-2 rounded-full" style={{ backgroundColor: column.color }} /><Text numberOfLines={1} className="flex-1 text-xs font-extrabold" style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}>{column.label}</Text><View className="h-6 min-w-6 items-center justify-center px-2" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text className="text-[10px] font-bold" style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}>{projects.length}</Text></View></View>
+    <View className="relative flex-1">
+      <ScrollView ref={scrollRef} className="flex-1" nestedScrollEnabled removeClippedSubviews={false} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" scrollEventThrottle={16} onLayout={() => scrollRef.current?.measureInWindow((_, y) => onViewportLayout(column.key, y))} onScroll={(event) => { const y = event.nativeEvent.contentOffset.y; setShowTopButton(y > 80); onColumnScroll(column.key, y); }}>
+        {cardRows}
+        {previewAtEnd ? renderDropSlot() : null}
+        {projects.length === 0 && !showDropSlot ? <Text className="my-7 text-center text-[11px]" style={{ color: theme.muted }}>Nenhum projeto nesta coluna</Text> : null}
+      </ScrollView>
+      {showTopButton ? <Pressable accessibilityRole="button" accessibilityLabel={`Voltar ao topo da coluna ${column.label}`} onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })} className="absolute top-3 h-9 w-9 items-center justify-center" style={{ left: "50%", transform: [{ translateX: -18 }], backgroundColor: theme.primary, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius, elevation: 4 }}><Text style={{ color: theme.background, fontFamily: fontFamily(theme.font) }} className="text-lg font-black">↑</Text></Pressable> : null}
+    </View>
+  </View>;
+}

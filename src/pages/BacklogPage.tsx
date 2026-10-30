@@ -1,0 +1,11 @@
+import React from "react";
+import { ScrollView, Text, View } from "react-native";
+import { Project } from "../stores/nativeProjectStore";
+import { ThemeSettings } from "../stores/themeStore";
+import { ProjectCard } from "../components/project/ProjectCard";
+import { Action, Body, Panel, SectionTitle, Title, Eyebrow } from "../components/ui";
+import { cardStyle } from "../utils/theme";
+export function BacklogScreen({ projects, theme, onCreate, onOpen }: { projects: Project[]; theme: ThemeSettings; onCreate: () => void; onOpen: (id: number) => void }) {
+  const backlog = projects.filter((project) => project.status === "unstarted");
+  return <ScrollView className="flex-1" contentContainerStyle={{ padding: 18, paddingBottom: 28 }}><View className="mb-5 flex-row items-center justify-between"><View className="flex-1 pr-2"><Eyebrow theme={theme}>IDEIAS E PRÓXIMOS PASSOS</Eyebrow><Title theme={theme}>Backlog</Title><Body theme={theme}>Projetos aguardando planejamento ou início.</Body></View><Action theme={theme} onPress={onCreate}>＋ Adicionar</Action></View><View className="mb-4 flex-row items-center gap-3 p-4" style={cardStyle(theme)}><Text style={{ color: theme.primary }} className="text-3xl font-black">{backlog.length}</Text><View><Text style={{ color: theme.text }} className="text-xs font-bold">{backlog.length === 1 ? "projeto no backlog" : "projetos no backlog"}</Text><Text style={{ color: theme.muted }} className="mt-1 text-[10px]">Itens na coluna “Não iniciado” do quadro</Text></View></View>{backlog.length ? backlog.map((project) => <ProjectCard key={project.id} project={project} theme={theme} onPress={() => onOpen(project.id)} />) : <Panel theme={theme}><Text style={{ color: theme.primary }} className="mb-2 text-2xl">✦</Text><SectionTitle theme={theme}>Backlog em dia</SectionTitle><Body theme={theme}>Não há projetos aguardando início. Crie um projeto ou mova um existente para cá.</Body><View className="mt-4"><Action theme={theme} onPress={onCreate}>＋ Criar projeto</Action></View></Panel>}</ScrollView>;
+}

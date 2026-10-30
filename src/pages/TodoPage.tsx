@@ -1,0 +1,47 @@
+import React, { useState } from "react";
+import { Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import useTodoStore from "../stores/todoStore";
+import { ThemeSettings } from "../stores/themeStore";
+import { Action, Body, Eyebrow, LinkText, Panel, SectionTitle, Small, Title } from "../components/ui";
+import { fontFamily, inputDynamic } from "../utils/theme";
+export function TodoScreen({ theme }: { theme: ThemeSettings }) {
+  const lists = useTodoStore((state) => state.lists);
+  const todos = useTodoStore((state) => state.todos);
+  const addTodo = useTodoStore((state) => state.addTodo);
+  const addList = useTodoStore((state) => state.addList);
+  const renameList = useTodoStore((state) => state.renameList);
+  const removeList = useTodoStore((state) => state.removeList);
+  const toggleTodo = useTodoStore((state) => state.toggleTodo);
+  const removeTodo = useTodoStore((state) => state.removeTodo);
+  const clearCompleted = useTodoStore((state) => state.clearCompleted);
+  const uncheckCompleted = useTodoStore((state) => state.uncheckCompleted);
+  const [text, setText] = useState("");
+  const [selectedListId, setSelectedListId] = useState("default");
+  const [newListName, setNewListName] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [showListMenu, setShowListMenu] = useState(false);
+  const [renameText, setRenameText] = useState("");
+  const [confirmDeleteList, setConfirmDeleteList] = useState(false);
+  const selectedList = lists.find((list) => list.id === selectedListId) ?? lists[0];
+  const listTodos = todos.filter((todo) => todo.listId === selectedList?.id);
+  const completed = listTodos.filter((todo) => todo.done).length;
+  const createTodo = () => { if (text.trim() && selectedList) { addTodo(selectedList.id, text.trim()); setText(""); } };
+  const createList = () => { if (!newListName.trim()) return; const id = addList(newListName.trim()); setSelectedListId(id); setNewListName(""); };
+  const inputStyle = inputDynamic(theme);
+  return <ScrollView className="flex-1" keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"} automaticallyAdjustKeyboardInsets={Platform.OS === "ios"} contentContainerStyle={{ padding: 18, paddingBottom: 28 }}>
+    <View className="mb-5 flex-row items-end justify-between"><View className="flex-1 pr-2"><Eyebrow theme={theme}>FOCO DO DIA</Eyebrow><Title theme={theme}>Tarefas</Title><Body theme={theme}>Organize suas tarefas em listas separadas.</Body></View><View className="items-end"><Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-xl font-black">{completed}/{listTodos.length}</Text><Small theme={theme}>concluídas</Small></View></View>
+    <Panel theme={theme}>
+      <View className="mb-3 flex-row items-center justify-between"><SectionTitle theme={theme}>Suas listas</SectionTitle>{selectedList && !renaming ? <LinkText theme={theme} onPress={() => { setRenameText(selectedList.name); setRenaming(true); }}>Renomear</LinkText> : null}</View>
+      <Pressable accessibilityRole="button" accessibilityLabel="Selecionar lista" accessibilityState={{ expanded: showListMenu }} onPress={() => setShowListMenu(!showListMenu)} className="min-h-12 flex-row items-center justify-between px-3 py-2" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><View className="flex-1"><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[9px]">LISTA ATUAL</Text><Text numberOfLines={1} style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mt-0.5 text-sm font-bold">{selectedList?.name ?? "Selecione uma lista"}</Text></View><Text style={{ color: theme.primary }} className="ml-3 text-base">{showListMenu ? "⌃" : "⌄"}</Text></Pressable>
+      {showListMenu ? <View className="mt-1 overflow-hidden" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>{lists.map((list) => { const active = list.id === selectedList?.id; const count = todos.filter((todo) => todo.listId === list.id && !todo.done).length; return <Pressable key={list.id} accessibilityRole="button" accessibilityState={{ selected: active }} onPress={() => { setSelectedListId(list.id); setShowListMenu(false); setRenaming(false); setConfirmDeleteList(false); }} className="flex-row items-center justify-between px-3 py-2.5" style={{ backgroundColor: active ? theme.raised : theme.surface, borderBottomColor: theme.border, borderBottomWidth: theme.borderWidth }}><View className="flex-1"><Text numberOfLines={1} style={{ color: active ? theme.primary : theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">{list.name}</Text><Text style={{ color: theme.muted }} className="mt-0.5 text-[9px]">{count} pendente{count === 1 ? "" : "s"}</Text></View>{active ? <Text style={{ color: theme.primary }} className="ml-2 text-xs font-black">✓</Text> : null}</Pressable>; })}</View> : null}
+      <View className="mt-3 flex-row gap-2"><TextInput accessibilityLabel="Nome da nova lista" value={newListName} onChangeText={setNewListName} onSubmitEditing={createList} returnKeyType="done" placeholder="Nome de uma nova lista" placeholderTextColor={theme.muted} style={[inputStyle, { flex: 1 }]} /><Action theme={theme} secondary onPress={createList}>＋ Lista</Action></View>
+      {renaming && selectedList ? <View className="mt-3 flex-row gap-2"><TextInput accessibilityLabel="Renomear lista" value={renameText} onChangeText={setRenameText} onSubmitEditing={() => { if (renameText.trim()) renameList(selectedList.id, renameText.trim()); setRenaming(false); }} returnKeyType="done" placeholder="Nome da lista" placeholderTextColor={theme.muted} style={[inputStyle, { flex: 1 }]} /><Action theme={theme} onPress={() => { if (renameText.trim()) renameList(selectedList.id, renameText.trim()); setRenaming(false); }}>Salvar</Action><Action theme={theme} secondary onPress={() => setRenaming(false)}>Cancelar</Action></View> : null}
+      {lists.length > 1 && selectedList ? <View className="mt-2">{confirmDeleteList ? <View className="flex-row flex-wrap items-center gap-2"><Body theme={theme}>Excluir “{selectedList.name}” e suas tarefas?</Body><Action theme={theme} danger onPress={() => { const remaining = lists.find((list) => list.id !== selectedList.id); removeList(selectedList.id); if (remaining) setSelectedListId(remaining.id); setConfirmDeleteList(false); }}>Excluir lista</Action><Action theme={theme} secondary onPress={() => setConfirmDeleteList(false)}>Cancelar</Action></View> : <LinkText theme={theme} onPress={() => setConfirmDeleteList(true)}>Excluir lista atual</LinkText>}</View> : null}
+    </Panel>
+    <Panel theme={theme}><View className="flex-row gap-2"><TextInput accessibilityLabel="Nova tarefa" value={text} onChangeText={setText} placeholder={selectedList ? `Adicionar tarefa em ${selectedList.name}` : "Escreva uma tarefa"} placeholderTextColor={theme.muted} onSubmitEditing={createTodo} returnKeyType="done" style={[inputStyle, { flex: 1 }]} /><Action theme={theme} onPress={createTodo}>＋ Adicionar</Action></View>
+      <View className="mb-3 mt-5 flex-row flex-wrap items-center justify-between gap-2"><SectionTitle theme={theme}>{selectedList?.name ?? "Tarefas"}</SectionTitle>{completed > 0 ? <View className="flex-row flex-wrap gap-3"><LinkText theme={theme} onPress={() => uncheckCompleted(selectedList.id)}>Desmarcar todas</LinkText><LinkText theme={theme} onPress={() => clearCompleted(selectedList.id)}>Limpar concluídas</LinkText></View> : null}</View>
+      {listTodos.length ? listTodos.map((todo) => <View key={todo.id} className="flex-row items-center border-b py-3" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}><Pressable accessibilityRole="checkbox" accessibilityState={{ checked: todo.done }} accessibilityLabel={todo.done ? `Marcar ${todo.text} como pendente` : `Concluir ${todo.text}`} onPress={() => toggleTodo(todo.id)} className="mr-3 h-6 w-6 items-center justify-center" style={{ borderColor: todo.done ? theme.primary : theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius, backgroundColor: todo.done ? theme.primary : "transparent" }}><Text style={{ color: theme.background }} className="font-bold">{todo.done ? "✓" : ""}</Text></Pressable><Text className={`flex-1 text-sm ${todo.done ? "line-through" : ""}`} style={{ color: todo.done ? theme.muted : theme.text, fontFamily: fontFamily(theme.font) }}>{todo.text}</Text><Pressable accessibilityRole="button" accessibilityLabel={`Excluir ${todo.text}`} onPress={() => removeTodo(todo.id)} className="ml-2 h-8 w-8 items-center justify-center" style={{ backgroundColor: theme.raised, borderRadius: theme.borderRadius }}><Text style={{ color: theme.danger }} className="text-base">×</Text></Pressable></View>) : <View className="items-center py-8"><Text style={{ color: theme.primary }} className="mb-2 text-2xl">✓</Text><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="font-bold">Lista vazia</Text><Body theme={theme}>Adicione a primeira tarefa desta lista.</Body></View>}
+      {listTodos.length ? <View className="mt-2"><Small theme={theme}>{listTodos.length - completed} pendente{listTodos.length - completed === 1 ? "" : "s"} · salvas neste dispositivo</Small></View> : null}
+    </Panel>
+  </ScrollView>;
+}
