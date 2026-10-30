@@ -1,4 +1,4 @@
-# ProjeKan 1.0.0 — lançamento inicial
+# ProjeKan 1.0.0 - lançamento inicial
 
 O ProjeKan chega para ajudar você a organizar projetos, acompanhar o progresso e manter as tarefas do dia a dia em ordem.
 
