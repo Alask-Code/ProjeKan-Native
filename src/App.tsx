@@ -6,7 +6,9 @@ import { useFonts as useCustomFonts } from "expo-font";
 import { Archivo_400Regular } from "@expo-google-fonts/archivo";
 import { Inter_400Regular } from "@expo-google-fonts/inter";
 import { Rajdhani_500Medium } from "@expo-google-fonts/rajdhani";
+import { PressStart2P_400Regular } from "@expo-google-fonts/press-start-2p";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import brandMark from "./assets/projekan-mark.png";
 import useNativeProjects from "./stores/nativeProjectStore";
@@ -22,16 +24,19 @@ import { ThemeEditorScreen } from "./pages/ThemeEditorPage";
 import { ProjectDetailsModal } from "./components/project/ProjectDetailsModal";
 import { ProjectFormModal } from "./components/project/ProjectFormModal";
 import { OnboardingModal, ProfilePhotoModal } from "./components/profile/ProfileModals";
+import { SettingsModal } from "./components/profile/SettingsModal";
 import { Action, AppIcon } from "./components/ui";
 import { isDark, fontFamily } from "./utils/theme";
 import { useUserProfile } from "./hooks/useUserProfile";
 import { useOnboarding } from "./hooks/useOnboarding";
 function AppContent() {
   const [route, setRoute] = useState<Route>("/");
+  const [routeHydrated, setRouteHydrated] = useState(false);
   const [themeDraftDirty, setThemeDraftDirty] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingProfilePhoto, setEditingProfilePhoto] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const profile = useUserProfile();
   const { photo: profilePhoto, name: profileName, saveName: saveProfileName, saveProfile, clearProfile } = profile;
   const onboarding = useOnboarding();
@@ -51,6 +56,18 @@ function AppContent() {
   const moveProjectToPosition = useNativeProjects((state) => state.moveProjectToPosition);
   const theme = useThemeStore((state) => state.settings);
   const completeOnboarding = () => { removeTemplateProjects(); finishOnboarding(); };
+  useEffect(() => {
+    let active = true;
+    AsyncStorage.getItem("projekan-last-route").then((savedRoute) => {
+      if (!active) return;
+      const validRoute = navigation.some((item) => item.path === savedRoute) || savedRoute === "/theme-editor";
+      if (validRoute) setRoute(savedRoute as Route);
+    }).catch(() => undefined).finally(() => { if (active) setRouteHydrated(true); });
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    if (routeHydrated) void AsyncStorage.setItem("projekan-last-route", route).catch(() => undefined);
+  }, [route, routeHydrated]);
   const deleteAllSavedData = () => {
     clearAllProjects(); clearAllTodos(); resetTheme(); clearProfile();
     setRoute("/"); setEditingId(null); setCreating(false); setEditingProfilePhoto(false);
@@ -69,15 +86,19 @@ function AppContent() {
     setRoute(nextRoute);
   };
   useEffect(() => {
-    if (route !== "/theme-editor") return;
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (themeDraftDirty) {
+      if (route === "/theme-editor" && themeDraftDirty) {
         Alert.alert("Descartar alterações?", "Você tem alterações no tema que ainda não foram salvas.", [
           { text: "Continuar editando", style: "cancel" },
           { text: "Sair sem salvar", style: "destructive", onPress: () => { setThemeDraftDirty(false); setRoute("/"); } },
         ]);
-      } else {
+      } else if (route !== "/") {
         setRoute("/");
+      } else {
+        Alert.alert("Sair do ProjeKan?", "Deseja fechar o aplicativo?", [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Sair", style: "destructive", onPress: () => BackHandler.exitApp() },
+        ]);
       }
       return true;
     });
@@ -119,7 +140,7 @@ function AppContent() {
         <ProjectFormModal visible={creating} project={null} theme={theme} onClose={() => setCreating(false)} onSave={(draft) => { saveProject(draft); setCreating(false); }} />
         <ProjectDetailsModal project={selectedProject} projects={projects} theme={theme} onClose={() => setEditingId(null)} onEdit={() => { if (!selectedProject) return; const project = selectedProject; setEditingId(null); setTimeout(() => setEditingId(-project.id), 0); }} onDelete={(id) => { deleteProject(id); setEditingId(null); }} onUpdate={updateProject} />
         <ProjectFormModal visible={editingId !== null && editingId < 0} project={editingId ? projects.find((project) => project.id === Math.abs(editingId)) ?? null : null} theme={theme} onClose={() => setEditingId(null)} onSave={(draft) => { if (editingId) updateProject(Math.abs(editingId), draft); setEditingId(null); }} />
-        <ProfilePhotoModal visible={editingProfilePhoto} value={profilePhoto ?? ""} name={profileName} theme={theme} onClose={() => setEditingProfilePhoto(false)} onShowTutorial={() => { setEditingProfilePhoto(false); openOnboarding(); }} onOpenTheme={() => { setEditingProfilePhoto(false); setRoute("/theme-editor"); }} onDeleteAll={() => Alert.alert("Apagar todo o conteúdo salvo?", "Isso remove projetos, listas e tarefas, restaura o tema padrão e apaga os dados do perfil. Essa ação não pode ser desfeita.", [{ text: "Cancelar", style: "cancel" }, { text: "Apagar tudo", style: "destructive", onPress: deleteAllSavedData }])} onExportCsv={() => createBackupCsv({ projects, lists, todos })} onImportCsv={(csv) => {
+        <ProfilePhotoModal visible={editingProfilePhoto} value={profilePhoto ?? ""} name={profileName} theme={theme} onClose={() => setEditingProfilePhoto(false)} onShowTutorial={() => { setEditingProfilePhoto(false); openOnboarding(); }} onOpenTheme={() => { setEditingProfilePhoto(false); setRoute("/theme-editor"); }} onOpenSettings={() => { setEditingProfilePhoto(false); setShowSettings(true); }} onDeleteAll={() => Alert.alert("Apagar todo o conteúdo salvo?", "Isso remove projetos, listas e tarefas, restaura o tema padrão e apaga os dados do perfil. Essa ação não pode ser desfeita.", [{ text: "Cancelar", style: "cancel" }, { text: "Apagar tudo", style: "destructive", onPress: deleteAllSavedData }])} onExportCsv={() => createBackupCsv({ projects, lists, todos })} onImportCsv={(csv) => {
           try {
             const backup = parseBackupCsv(csv);
             Alert.alert("Substituir dados atuais?", `O CSV contém ${backup.projects.length} projetos, ${backup.lists.length} listas e ${backup.todos.length} tarefas. Os dados atuais dessas áreas serão substituídos.`, [
@@ -130,6 +151,7 @@ function AppContent() {
             Alert.alert("CSV inválido", error instanceof Error ? error.message : "Confira o arquivo e tente novamente.");
           }
         }} onSave={(photo, name) => { const nextName = name.trim() || "Meu perfil"; saveProfile(photo, nextName); setEditingProfilePhoto(false); }} />
+        <SettingsModal visible={showSettings} theme={theme} onClose={() => { setShowSettings(false); setEditingProfilePhoto(true); }} />
         <OnboardingModal visible={showOnboarding} step={onboardingStep} name={profileName} theme={theme} onStep={setOnboardingStep} onNameSave={saveProfileName} onDismiss={finishOnboarding} onComplete={completeOnboarding} />
       </SafeAreaView>
     </SafeAreaProvider>
@@ -137,7 +159,7 @@ function AppContent() {
 }
 
 export default function App() {
-  const [fontsLoaded, fontError] = useCustomFonts({ Archivo: Archivo_400Regular, Inter: Inter_400Regular, Rajdhani: Rajdhani_500Medium });
+  const [fontsLoaded, fontError] = useCustomFonts({ Archivo: Archivo_400Regular, Inter: Inter_400Regular, Rajdhani: Rajdhani_500Medium, PressStart2P: PressStart2P_400Regular });
   if (!fontsLoaded && !fontError) return null;
   return <GestureHandlerRootView style={{ flex: 1 }}><SafeAreaProvider><AppContent /></SafeAreaProvider></GestureHandlerRootView>;
 }

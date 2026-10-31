@@ -4,12 +4,14 @@ import Svg, { Path } from "react-native-svg";
 import { Project, ProjectStatus } from "../stores/nativeProjectStore";
 import { ThemeSettings } from "../stores/themeStore";
 import { columns } from "../constants/app";
+import useNativeProjects from "../stores/nativeProjectStore";
 import { ProjectCard, DragPreviewCard } from "../components/project/ProjectCard";
 import { useBoardDrag } from "../hooks/useBoardDrag";
 import { Action, AppIcon, Body, Eyebrow, Title } from "../components/ui";
 import { fontFamily } from "../utils/theme";
 export function BoardScreen({ projects, theme, onCreate, onOpen, onMoveToPosition }: { projects: Project[]; theme: ThemeSettings; onCreate: () => void; onOpen: (id: number) => void; onMoveToPosition: (id: number, status: ProjectStatus, index: number) => void }) {
-  const [hiddenColumns, setHiddenColumns] = useState<ProjectStatus[]>([]);
+  const hiddenColumns = useNativeProjects((state) => state.hiddenColumns);
+  const setHiddenColumns = useNativeProjects((state) => state.setHiddenColumns);
   const { rootRef, boardRef, dragPosition, dragLiftProgress, draggingId, isDropping, settlingId, dragSize, dropPreview, registerColumn, registerViewport, registerCard, startDrag, updateDrag, finishDrag, cancelDrag, draggedProject, rootWindow, boardWindowX, boardScrollX, columnViewports } = useBoardDrag(projects, onMoveToPosition, hiddenColumns);
   return <View ref={rootRef} onLayout={() => rootRef.current?.measureInWindow((x, y) => { rootWindow.current = { x, y }; })} className="flex-1 pt-4" style={{ overflow: "visible" }}>
     <View className="mb-4 flex-row items-start justify-between px-4"><View className="flex-1 pr-2"><Eyebrow theme={theme}>VISÃO GERAL</Eyebrow><Title theme={theme}>Seus projetos</Title><Body theme={theme}>Segure e arraste: vertical para reorganizar · horizontal para trocar de coluna</Body></View><Action theme={theme} icon="plus" onPress={onCreate}>Novo projeto</Action></View>

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
-import { Keyboard, Pressable, ScrollView, Text, View, type ScrollViewInstance, type ScrollViewProps } from "react-native";
+import { Keyboard, Pressable, ScrollView, Text, UIManager, View, type ScrollViewInstance, type ScrollViewProps } from "react-native";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { ThemeSettings } from "../stores/themeStore";
 import { cardStyle, fontFamily } from "../utils/theme";
 
-export type AppIconName = "plus" | "minus" | "chevronDown" | "chevronUp" | "more" | "close" | "eye" | "eyeOff" | "arrowUp" | "arrowUpRight" | "check" | "pencil" | "trash" | "clock" | "calendar" | "github" | "board" | "overview" | "backlog" | "tasks";
+export type AppIconName = "plus" | "minus" | "chevronDown" | "chevronUp" | "more" | "close" | "eye" | "eyeOff" | "settings" | "arrowUp" | "arrowUpRight" | "check" | "pencil" | "trash" | "clock" | "calendar" | "document" | "drive" | "github" | "board" | "overview" | "backlog" | "tasks";
 
 export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: AppIconName; size?: number; color: string; strokeWidth?: number }) {
   const common = { fill: "none" as const, stroke: color, strokeWidth, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -17,11 +17,14 @@ export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: A
     {name === "close" ? <Path d="m6 6 12 12M18 6 6 18" {...common} /> : null}
     {name === "eye" ? <><Path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" {...common} /><Circle cx={12} cy={12} r={2.5} {...common} /></> : null}
     {name === "eyeOff" ? <><Path d="M3 3 21 21M10.6 6.2A10.6 10.6 0 0 1 12 6c6.1 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.7M6.2 6.3C3.8 7.8 2.5 12 2.5 12s3.4 6 9.5 6c1.1 0 2.1-.2 3-.5" {...common} /><Path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" {...common} /></> : null}
+    {name === "settings" ? <><Path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" {...common} /><Path d="m19.4 13.5 1.1.8-1.2 2.1-1.3-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.4h-2.5l-.3-1.4a7.8 7.8 0 0 1-1.5-.9l-1.3.5-1.2-2.1 1.1-.8a7.1 7.1 0 0 1 0-1.8l-1.1-.8 1.2-2.1 1.3.5a7.8 7.8 0 0 1 1.5-.9l.3-1.4h2.5l.2 1.4a7.8 7.8 0 0 1 1.5.9l1.3-.5 1.2 2.1-1.1.8a7.1 7.1 0 0 1 0 1.8Z" transform="translate(-1.5 -2)" {...common} /></> : null}
     {name === "arrowUp" ? <Path d="M12 19V5m-7 7 7-7 7 7" {...common} /> : null}
     {name === "arrowUpRight" ? <Path d="M7 17 17 7M8 7h9v9" {...common} /> : null}
     {name === "check" ? <Path d="m5 12 4.5 4.5L19 7" {...common} /> : null}
     {name === "clock" ? <><Circle cx={12} cy={12} r={9} {...common} /><Path d="M12 7v5l3 2" {...common} /></> : null}
     {name === "calendar" ? <><Rect x={3.5} y={5} width={17} height={16} rx={2} {...common} /><Path d="M7.5 3v4M16.5 3v4M3.5 10h17m-12 4h.01M12 14h.01M15.5 14h.01M7.5 17h.01M12 17h.01" {...common} /></> : null}
+    {name === "document" ? <><Path d="M6 3.5h8l4 4v13H6z" {...common} /><Path d="M14 3.5v4h4M9 12h6M9 15.5h6" {...common} /></> : null}
+    {name === "drive" ? <><Path d="M8 3.5h5.1l7.1 12.2h-5.1L8 3.5Z" fill="#00AC47" /><Path d="M8 3.5h5.1L6 16.8H.9L8 3.5Z" fill="#4285F4" /><Path d="M6 16.8h14.2l-2.7 4.2H3.4L6 16.8Z" fill="#FFBA00" /></> : null}
     {name === "github" ? <Path d="M12 .7a11.3 11.3 0 0 0-3.58 22.02c.57.1.78-.25.78-.55v-1.94c-3.18.69-3.85-1.53-3.85-1.53-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.67 1.25 3.32.95.1-.74.4-1.25.73-1.54-2.54-.29-5.22-1.27-5.22-5.65 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .96-.31 3.12 1.17a10.9 10.9 0 0 1 5.68 0c2.16-1.48 3.12-1.17 3.12-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.39-2.69 5.36-5.24 5.64.41.35.77 1.05.77 2.12v3.14c0 .3.21.66.79.55A11.3 11.3 0 0 0 12 .7Z" fill={color} /> : null}
     {name === "pencil" ? <Path d="m4 16.5-.8 4.3 4.3-.8L19.8 7.7a2.1 2.1 0 0 0-3-3L4 16.5ZM14.8 6.7l3 3" {...common} /> : null}
     {name === "trash" ? <Path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" {...common} /> : null}
@@ -34,7 +37,7 @@ export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: A
 
 export function KeyboardAwareScrollView({ onFocusCapture, ...props }: ScrollViewProps) {
   const scrollRef = useRef<ScrollViewInstance | null>(null);
-  const focusedInput = useRef<ScrollViewInstance | null>(null);
+  const focusedInput = useRef<number | null>(null);
   const currentOffset = useRef(0);
   const keyboardTop = useRef<number | null>(null);
   const scrollFocusedInput = () => {
@@ -43,24 +46,22 @@ export function KeyboardAwareScrollView({ onFocusCapture, ...props }: ScrollView
     const scrollView = scrollRef.current;
     if (!target || keyboardY == null || !scrollView) return;
 
-    requestAnimationFrame(() => target.measureInWindow((_inputX, inputY, _inputWidth, inputHeight) => {
+    requestAnimationFrame(() => UIManager.measureInWindow(target, (_inputX, inputY, _inputWidth, inputHeight) => {
       scrollView.measureInWindow((_scrollX, scrollY, _scrollWidth, scrollHeight) => {
-        const visibleBottom = Math.min(scrollY + scrollHeight, keyboardY) - 72;
+        const visibleBottom = Math.min(scrollY + scrollHeight, keyboardY) - 88;
         const inputBottom = inputY + inputHeight;
         const distanceBelow = inputBottom - visibleBottom;
         const distanceAbove = scrollY + 8 - inputY;
-        if (distanceBelow > 0) {
-          scrollView.scrollTo({ y: currentOffset.current + distanceBelow, animated: true });
-        } else if (distanceAbove > 0) {
-          scrollView.scrollTo({ y: Math.max(0, currentOffset.current - distanceAbove), animated: true });
-        }
+        if (distanceBelow > 0) scrollView.scrollTo({ y: currentOffset.current + distanceBelow, animated: true });
+        else if (distanceAbove > 0) scrollView.scrollTo({ y: Math.max(0, currentOffset.current - distanceAbove), animated: true });
       });
     }));
   };
   useEffect(() => {
     const subscription = Keyboard.addListener("keyboardDidShow", (event) => {
       keyboardTop.current = event.endCoordinates.screenY;
-      setTimeout(scrollFocusedInput, 50);
+      setTimeout(scrollFocusedInput, 100);
+      setTimeout(scrollFocusedInput, 260);
     });
     const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
       keyboardTop.current = null;
@@ -72,9 +73,13 @@ export function KeyboardAwareScrollView({ onFocusCapture, ...props }: ScrollView
   }, []);
   return <ScrollView ref={scrollRef} {...props} onFocusCapture={(event) => {
     onFocusCapture?.(event);
-    if (event.target == null || typeof event.target === "number") return;
-    focusedInput.current = event.target as ScrollViewInstance;
-    if (Keyboard.isVisible()) setTimeout(scrollFocusedInput, 50);
+    const target = event.nativeEvent.target ?? event.target;
+    if (typeof target !== "number") return;
+    focusedInput.current = target;
+    if (Keyboard.isVisible()) {
+      setTimeout(scrollFocusedInput, 100);
+      setTimeout(scrollFocusedInput, 260);
+    }
   }} onScroll={(event) => {
     currentOffset.current = event.nativeEvent.contentOffset.y;
     props.onScroll?.(event);

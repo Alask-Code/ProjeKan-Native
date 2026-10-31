@@ -7,15 +7,16 @@
   },
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "expo start --tunnel",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "build:apk": "npx eas-cli build --platform android --profile preview",
+    "start": "node scripts/sync-changelog.cjs && expo start --tunnel",
+    "android": "node scripts/sync-changelog.cjs && expo run:android",
+    "ios": "node scripts/sync-changelog.cjs && expo run:ios",
+    "build:apk": "node scripts/sync-changelog.cjs && npx eas-cli build --platform android --profile preview",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@expo-google-fonts/archivo": "^0.4.2",
     "@expo-google-fonts/inter": "^0.4.2",
+    "@expo-google-fonts/press-start-2p": "^0.4.1",
     "@expo-google-fonts/rajdhani": "^0.4.1",
     "@expo/ngrok": "^4.1.3",
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -23,6 +24,7 @@
     "expo": "^58.0.0",
     "expo-font": "^58.0.11",
     "expo-image-picker": "~58.0.10",
+    "expo-notifications": "~58.1.6",
     "expo-status-bar": "~58.0.4",
     "nativewind": "^4.1.23",
     "react": "19.3.0",

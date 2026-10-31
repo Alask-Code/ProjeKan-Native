@@ -7,7 +7,7 @@ import { chooseImage } from "../../utils/media";
 function KeyboardModalFrame({ children }: { children: React.ReactNode }) {
   return <KeyboardAvoidingView className="flex-1 bg-black/60 px-5" behavior={Platform.OS === "ios" ? "padding" : "height"}><KeyboardAwareScrollView className="flex-1" contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingVertical: 20 }} keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}>{children}</KeyboardAwareScrollView></KeyboardAvoidingView>;
 }
-export function ProfilePhotoModal({ visible, value, name, theme, onClose, onSave, onShowTutorial, onOpenTheme, onDeleteAll, onExportCsv, onImportCsv }: { visible: boolean; value: string; name: string; theme: ThemeSettings; onClose: () => void; onSave: (photo: string, name: string) => void; onShowTutorial: () => void; onOpenTheme: () => void; onDeleteAll: () => void; onExportCsv: () => string; onImportCsv: (csv: string) => void }) {
+export function ProfilePhotoModal({ visible, value, name, theme, onClose, onSave, onShowTutorial, onOpenTheme, onOpenSettings, onDeleteAll, onExportCsv, onImportCsv }: { visible: boolean; value: string; name: string; theme: ThemeSettings; onClose: () => void; onSave: (photo: string, name: string) => void; onShowTutorial: () => void; onOpenTheme: () => void; onOpenSettings: () => void; onDeleteAll: () => void; onExportCsv: () => string; onImportCsv: (csv: string) => void }) {
   const [photo, setPhoto] = useState(value);
   const [profileNameDraft, setProfileNameDraft] = useState(name);
   const [editingName, setEditingName] = useState(false);
@@ -17,6 +17,7 @@ export function ProfilePhotoModal({ visible, value, name, theme, onClose, onSave
   const rows = [
     { icon: "overview" as const, title: "Ver tutorial", detail: "Rever o guia rápido", action: onShowTutorial },
     { icon: "board" as const, title: "Personalizar tema", detail: "Cores, fonte e aparência", action: onOpenTheme },
+    { icon: "settings" as const, title: "Configurações", detail: "Lembretes, novidades e atualizações", action: onOpenSettings },
     { icon: "arrowUp" as const, title: "Exportar dados", detail: "Salvar uma cópia em CSV", action: async () => { try { await Share.share({ title: "Backup ProjeKan.csv", message: onExportCsv() }); } catch { Alert.alert("Falha ao exportar", "Não foi possível abrir o compartilhamento do CSV."); } } },
     { icon: "arrowUpRight" as const, title: "Importar dados", detail: "Restaurar de um arquivo CSV", action: () => { setCsvDraft(""); setImportingCsv(true); } },
   ];

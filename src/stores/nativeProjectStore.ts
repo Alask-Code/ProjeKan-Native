@@ -20,6 +20,7 @@ export type Project = {
   updatedAt?: number;
   dueDate?: string;
   repositoryUrl?: string;
+  softwareDocumentDesignUrl?: string;
   notes?: string;
   logo?: string | number;
   backgroundImage?: string | number;
@@ -32,6 +33,8 @@ export type ProjectDraft = Omit<Project, "id" | "createdAt" | "updatedAt">;
 
 type Store = {
   projects: Project[];
+  hiddenColumns: ProjectStatus[];
+  setHiddenColumns: (update: ProjectStatus[] | ((current: ProjectStatus[]) => ProjectStatus[])) => void;
   addProject: (project: ProjectDraft) => void;
   updateProject: (id: number, updates: Partial<Project>) => void;
   deleteProject: (id: number) => void;
@@ -85,6 +88,8 @@ const initialProjects: Project[] = [...starterProjects.map((project) => ({ ...pr
 
 const useNativeProjects = create<Store>()(persist((set, get) => ({
   projects: initialProjects,
+  hiddenColumns: [],
+  setHiddenColumns: (update) => set((state) => ({ hiddenColumns: typeof update === "function" ? update(state.hiddenColumns) : update })),
   addProject: (project) => {
     const id = Math.max(0, ...get().projects.map((item) => item.id)) + 1;
     const createdAt = Date.now();
@@ -118,13 +123,15 @@ const useNativeProjects = create<Store>()(persist((set, get) => ({
 }), {
   name: "projekan-projects-native",
   storage: createJSONStorage(() => AsyncStorage),
-  version: 2,
+  version: 3,
   migrate: (persisted: any) => {
     const projects = Array.isArray(persisted?.projects) ? persisted.projects as Project[] : starterProjects;
+    const validStatuses: ProjectStatus[] = ["unstarted", "progress", "finished", "continuous", "warning", "archived"];
+    const hiddenColumns = Array.isArray(persisted?.hiddenColumns) ? persisted.hiddenColumns.filter((status: unknown): status is ProjectStatus => validStatuses.includes(status as ProjectStatus)) : [];
     const markedProjects = projects.map((project) => ({ ...project, isTemplate: project.isTemplate ?? templateProjectNames.has(project.name) }));
-    if (markedProjects.some((project) => project.isTemplate)) return { ...persisted, projects: markedProjects };
+    if (markedProjects.some((project) => project.isTemplate)) return { ...persisted, projects: markedProjects, hiddenColumns };
     const firstId = Math.max(0, ...projects.map((project) => project.id)) + 1;
-    return { ...persisted, projects: [...markedProjects, ...createDemoProjects(firstId)] };
+    return { ...persisted, projects: [...markedProjects, ...createDemoProjects(firstId)], hiddenColumns };
   },
 }));
 

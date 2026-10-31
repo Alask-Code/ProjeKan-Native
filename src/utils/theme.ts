@@ -16,7 +16,7 @@ export function openExternalUrl(value?: string | null) {
   }
 }
 export function imageSource(image: string | number): ImageSourcePropType { return typeof image === "number" ? image : { uri: image }; }
-export function fontFamily(font: string) { const normalized = font.toLowerCase(); return normalized.includes("mono") || normalized.includes("courier") ? "monospace" : normalized.includes("georgia") ? "Georgia" : normalized.includes("archivo") ? "Archivo" : normalized.includes("inter") ? "Inter" : normalized.includes("rajdhani") ? "Rajdhani" : undefined; }
+export function fontFamily(font: string) { const normalized = font.toLowerCase(); return normalized.includes("press start 2p") ? "PressStart2P" : normalized.includes("mono") || normalized.includes("courier") ? "monospace" : normalized.includes("georgia") ? "Georgia" : normalized.includes("archivo") ? "Archivo" : normalized.includes("inter") ? "Inter" : normalized.includes("rajdhani") ? "Rajdhani" : undefined; }
 export function cardStyle(theme: ThemeSettings) { return { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }; }
 export function pieSlicePath(cx: number, cy: number, radius: number, percentage: number) {
   const angle = (percentage / 100) * Math.PI * 2 - Math.PI / 2;

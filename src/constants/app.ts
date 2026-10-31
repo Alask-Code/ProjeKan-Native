@@ -28,7 +28,7 @@ export const colors: { key: keyof ThemeSettings; label: string }[] = [
   { key: "info", label: "Informações" },
 ];
 
-export const fonts = ["monospace", "system-ui, sans-serif", "Arial, sans-serif", "Verdana, sans-serif", "Georgia, serif", '"Courier New", monospace', "Archivo", "Inter", "Rajdhani"];
+export const fonts = ["monospace", "system-ui, sans-serif", "Arial, sans-serif", "Verdana, sans-serif", "Georgia, serif", '"Courier New", monospace', "Archivo", "Inter", "Rajdhani", "Press Start 2P"];
 
 export const propertyTypes: { key: ProjectPropertyType; label: string }[] = [
   { key: "text", label: "Texto" }, { key: "number", label: "Número" }, { key: "date", label: "Data" },
