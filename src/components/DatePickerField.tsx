@@ -36,8 +36,6 @@ export function DatePickerField({ value, onChange, theme, placeholder = "Selecio
         value: initialDate,
         mode: "date",
         display: "calendar",
-        design: "material",
-        title: "Selecionar data",
         onValueChange: (_event, selectedDate) => { if (selectedDate) onChange(serializeDate(selectedDate)); },
       });
       return;
