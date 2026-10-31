@@ -1,10 +1,11 @@
 import "./global.css";
-import React, { useState } from "react";
-import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, BackHandler, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts as useCustomFonts } from "expo-font";
 import { Archivo_400Regular } from "@expo-google-fonts/archivo";
 import { Inter_400Regular } from "@expo-google-fonts/inter";
+import { Rajdhani_500Medium } from "@expo-google-fonts/rajdhani";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import brandMark from "./assets/projekan-mark.png";
@@ -21,12 +22,13 @@ import { ThemeEditorScreen } from "./pages/ThemeEditorPage";
 import { ProjectDetailsModal } from "./components/project/ProjectDetailsModal";
 import { ProjectFormModal } from "./components/project/ProjectFormModal";
 import { OnboardingModal, ProfilePhotoModal } from "./components/profile/ProfileModals";
-import { Action } from "./components/ui";
+import { Action, AppIcon } from "./components/ui";
 import { isDark, fontFamily } from "./utils/theme";
 import { useUserProfile } from "./hooks/useUserProfile";
 import { useOnboarding } from "./hooks/useOnboarding";
 function AppContent() {
   const [route, setRoute] = useState<Route>("/");
+  const [themeDraftDirty, setThemeDraftDirty] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [creating, setCreating] = useState(false);
   const [editingProfilePhoto, setEditingProfilePhoto] = useState(false);
@@ -56,13 +58,38 @@ function AppContent() {
   };
   const selectedProject = projects.find((project) => project.id === editingId) ?? null;
   const currentTitle = route === "/theme-editor" ? "Tema" : navigation.find((item) => item.path === route)?.label ?? "Quadro";
+  const requestRoute = (nextRoute: Route) => {
+    if (route === "/theme-editor" && themeDraftDirty && nextRoute !== route) {
+      Alert.alert("Descartar alterações?", "Você tem alterações no tema que ainda não foram salvas.", [
+        { text: "Continuar editando", style: "cancel" },
+        { text: "Sair sem salvar", style: "destructive", onPress: () => { setThemeDraftDirty(false); setRoute(nextRoute); } },
+      ]);
+      return;
+    }
+    setRoute(nextRoute);
+  };
+  useEffect(() => {
+    if (route !== "/theme-editor") return;
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (themeDraftDirty) {
+        Alert.alert("Descartar alterações?", "Você tem alterações no tema que ainda não foram salvas.", [
+          { text: "Continuar editando", style: "cancel" },
+          { text: "Sair sem salvar", style: "destructive", onPress: () => { setThemeDraftDirty(false); setRoute("/"); } },
+        ]);
+      } else {
+        setRoute("/");
+      }
+      return true;
+    });
+    return () => subscription.remove();
+  }, [route, themeDraftDirty]);
   const colorsStyle = { backgroundColor: theme.background };
 
   return (
     <SafeAreaProvider>
       <SafeAreaView className="flex-1" style={colorsStyle} edges={["top", "left", "right"]}>
         <StatusBar style={isDark(theme.background) ? "light" : "dark"} />
-        <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === "ios" ? "padding" : "height"}>
         <View className="flex-1">
           <View className="flex-row items-center justify-between border-b px-4 py-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderBottomWidth: theme.borderWidth }}>
             <View className="flex-row items-center gap-3">
@@ -77,13 +104,13 @@ function AppContent() {
             {route === "/overview" ? <OverviewScreen projects={projects} theme={theme} onOpenBoard={() => setRoute("/")} onOpen={(id) => setEditingId(id)} /> : null}
             {route === "/backlog" ? <BacklogScreen projects={projects} theme={theme} onCreate={() => setCreating(true)} onOpen={(id) => setEditingId(id)} /> : null}
             {route === "/todo" ? <TodoScreen theme={theme} /> : null}
-            {route === "/theme-editor" ? <ThemeEditorScreen theme={theme} /> : null}
+            {route === "/theme-editor" ? <ThemeEditorScreen theme={theme} onDirtyChange={setThemeDraftDirty} /> : null}
           </View>
 
           <View className="flex-row gap-1 border-t px-2 pb-2 pt-2" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderTopWidth: theme.borderWidth }}>
             {navigation.map((item) => {
               const active = route === item.path;
-              return <Pressable key={item.path} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: active }} onPress={() => setRoute(item.path)} className="min-h-[54px] flex-1 items-center justify-center px-0.5" style={{ backgroundColor: active ? theme.raised : "transparent", borderColor: active ? theme.border : "transparent", borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text style={{ color: active ? theme.primary : theme.muted, fontFamily: fontFamily(theme.font) }} className="text-lg leading-6">{item.icon}</Text><Text numberOfLines={1} style={{ color: active ? theme.primary : theme.muted, fontFamily: fontFamily(theme.font) }} className="mt-0.5 text-[9px] font-bold">{item.label}</Text>{active ? <View className="absolute bottom-0.5 h-0.5 w-5" style={{ backgroundColor: theme.primary, borderRadius: theme.borderRadius }} /> : null}</Pressable>;
+              return <Pressable key={item.path} accessibilityRole="tab" accessibilityLabel={item.label} accessibilityState={{ selected: active }} onPress={() => requestRoute(item.path)} className="min-h-[54px] flex-1 items-center justify-center px-0.5" style={{ backgroundColor: active ? theme.raised : "transparent", borderColor: active ? theme.border : "transparent", borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><View className="h-7 items-center justify-center"><AppIcon name={item.icon} size={22} color={active ? theme.primary : theme.muted} strokeWidth={2.1} /></View><Text numberOfLines={1} style={{ color: active ? theme.primary : theme.muted, fontFamily: fontFamily(theme.font) }} className="mt-0.5 text-[9px] font-bold">{item.label}</Text>{active ? <View className="absolute bottom-0.5 h-0.5 w-5" style={{ backgroundColor: theme.primary, borderRadius: theme.borderRadius }} /> : null}</Pressable>;
             })}
           </View>
         </View>
@@ -110,7 +137,8 @@ function AppContent() {
 }
 
 export default function App() {
-  const [fontsLoaded, fontError] = useCustomFonts({ Archivo: Archivo_400Regular, Inter: Inter_400Regular });
+  const [fontsLoaded, fontError] = useCustomFonts({ Archivo: Archivo_400Regular, Inter: Inter_400Regular, Rajdhani: Rajdhani_500Medium });
   if (!fontsLoaded && !fontError) return null;
   return <GestureHandlerRootView style={{ flex: 1 }}><SafeAreaProvider><AppContent /></SafeAreaProvider></GestureHandlerRootView>;
 }
+

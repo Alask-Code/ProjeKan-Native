@@ -3,11 +3,11 @@ import { ThemeSettings } from "../stores/themeStore";
 
 export type Route = "/" | "/overview" | "/backlog" | "/todo" | "/theme-editor";
 
-export const navigation: { path: Route; label: string; icon: string }[] = [
-  { path: "/", label: "Quadro", icon: "▦" },
-  { path: "/overview", label: "Visão geral", icon: "◉" },
-  { path: "/backlog", label: "Backlog", icon: "▤" },
-  { path: "/todo", label: "Tarefas", icon: "☷" },
+export const navigation: { path: Route; label: string; icon: "board" | "overview" | "backlog" | "tasks" }[] = [
+  { path: "/", label: "Quadro", icon: "board" },
+  { path: "/overview", label: "Visão geral", icon: "overview" },
+  { path: "/backlog", label: "Backlog", icon: "backlog" },
+  { path: "/todo", label: "Tarefas", icon: "tasks" },
 ];
 
 export const columns: { key: ProjectStatus; label: string; color: string }[] = [
@@ -28,7 +28,7 @@ export const colors: { key: keyof ThemeSettings; label: string }[] = [
   { key: "info", label: "Informações" },
 ];
 
-export const fonts = ["monospace", "system-ui, sans-serif", "Arial, sans-serif", "Verdana, sans-serif", "Georgia, serif", '"Courier New", monospace', "Archivo", "Inter"];
+export const fonts = ["monospace", "system-ui, sans-serif", "Arial, sans-serif", "Verdana, sans-serif", "Georgia, serif", '"Courier New", monospace', "Archivo", "Inter", "Rajdhani"];
 
 export const propertyTypes: { key: ProjectPropertyType; label: string }[] = [
   { key: "text", label: "Texto" }, { key: "number", label: "Número" }, { key: "date", label: "Data" },

@@ -26,6 +26,7 @@ export type Project = {
   properties?: ProjectProperty[];
   sortOrder?: number;
   isTemplate?: boolean;
+  taskListId?: string;
 };
 export type ProjectDraft = Omit<Project, "id" | "createdAt" | "updatedAt">;
 

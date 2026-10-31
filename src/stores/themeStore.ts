@@ -264,6 +264,48 @@ export const themePresets: { id: string; name: string; settings: ThemeSettings }
     }
   },
   {
+    id: 'cyberpunk-2077',
+    name: 'Cyberpunk 2077',
+    settings: {
+      ...defaultTheme,
+      primary: '#FCEE0A',
+      background: '#0A0A0F',
+      surface: '#12141C',
+      raised: '#202432',
+      text: '#F5F5F5',
+      muted: '#9EA5B8',
+      border: '#393E50',
+      danger: '#FF2A6D',
+      success: '#00F0A8',
+      warning: '#FCEE0A',
+      info: '#00F0FF',
+      borderRadius: 2,
+      borderWidth: 1,
+      font: 'Rajdhani'
+    }
+  },
+  {
+    id: 'macos',
+    name: 'macOS',
+    settings: {
+      ...defaultTheme,
+      primary: '#007AFF',
+      background: '#F5F5F7',
+      surface: '#FFFFFF',
+      raised: '#ECECF0',
+      text: '#1D1D1F',
+      muted: '#6E6E73',
+      border: '#D2D2D7',
+      danger: '#FF3B30',
+      success: '#34C759',
+      warning: '#FF9500',
+      info: '#5AC8FA',
+      borderRadius: 12,
+      borderWidth: 1,
+      font: 'system-ui, sans-serif'
+    }
+  },
+  {
     id: 'ms-dos',
     name: 'MS-DOS',
     settings: {

@@ -3,7 +3,7 @@ import { Animated, Dimensions, ScrollView, View } from "react-native";
 import { Project, ProjectStatus } from "../stores/nativeProjectStore";
 import { columns } from "../constants/app";
 
-export function useBoardDrag(projects: Project[], onMoveToPosition: (id: number, status: ProjectStatus, index: number) => void) {
+export function useBoardDrag(projects: Project[], onMoveToPosition: (id: number, status: ProjectStatus, index: number) => void, hiddenColumns: ProjectStatus[] = []) {
   const rootRef = useRef<React.ComponentRef<typeof View>>(null);
   const boardRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const boardWindowX = useRef(0);
@@ -56,7 +56,7 @@ export function useBoardDrag(projects: Project[], onMoveToPosition: (id: number,
   const registerCard = (status: ProjectStatus, id: number, y: number, height: number, width: number) => { cardBounds.current[status] = { ...cardBounds.current[status], [id]: { y, height, width } }; };
   const findDropPreview = (projectId: number, pageX: number, pageY: number) => {
     const contentX = pageX - boardWindowX.current + boardScrollX.current;
-    const target = columns.find((column) => { const bounds = columnBounds.current[column.key]; return bounds && contentX >= bounds.x && contentX <= bounds.x + bounds.width; });
+    const target = columns.find((column) => { const bounds = columnBounds.current[column.key]; return !hiddenColumns.includes(column.key) && bounds && contentX >= bounds.x && contentX <= bounds.x + bounds.width; });
     if (!target) return null;
     const viewport = columnViewports.current[target.key] ?? { y: 0, scrollY: 0 };
     const contentY = pageY - viewport.y + viewport.scrollY;
