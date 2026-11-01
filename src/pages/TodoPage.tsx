@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Keyboard, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Keyboard, Platform, Pressable, ScrollView, Text, TextInput, View, type ScrollViewInstance } from "react-native";
 import Svg, { Path, Rect } from "react-native-svg";
 import useTodoStore from "../stores/todoStore";
 import { ThemeSettings } from "../stores/themeStore";
-import { Action, Body, Eyebrow, AppIcon, KeyboardAwareScrollView, LinkText, Panel, SectionTitle, Small, Title } from "../components/ui";
+import { Action, Body, Eyebrow, AppIcon, LinkText, Panel, SectionTitle, Small, Title } from "../components/ui";
 import { fontFamily, inputDynamic } from "../utils/theme";
 export function TodoScreen({ theme }: { theme: ThemeSettings }) {
   const lists = useTodoStore((state) => state.lists);
@@ -31,14 +31,36 @@ export function TodoScreen({ theme }: { theme: ThemeSettings }) {
   const [editTodoText, setEditTodoText] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const scrollRef = React.useRef<ScrollViewInstance | null>(null);
+  const taskPanelY = React.useRef(0);
+  const completedPanelY = React.useRef(0);
+  const completedRowsY = React.useRef(0);
+  const todoRowY = React.useRef(new Map<number, number>());
+  const activeEditId = React.useRef<number | null>(null);
+  activeEditId.current = editingTodoId;
+  const scrollToEditedTodo = () => {
+    const todoId = activeEditId.current;
+    const rowY = todoId === null ? undefined : todoRowY.current.get(todoId);
+    if (rowY !== undefined) {
+      scrollRef.current?.scrollTo({ y: Math.max(0, rowY - 24), animated: true });
+    }
+  };
   useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", (event) => setKeyboardHeight(event.endCoordinates.height));
+    const showSubscription = Keyboard.addListener("keyboardDidShow", (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+      if (activeEditId.current !== null) setTimeout(scrollToEditedTodo, 200);
+    });
     const hideSubscription = Keyboard.addListener("keyboardDidHide", () => setKeyboardHeight(0));
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
   }, []);
+  useEffect(() => {
+    if (editingTodoId === null || !Keyboard.isVisible()) return;
+    const timeout = setTimeout(scrollToEditedTodo, 200);
+    return () => clearTimeout(timeout);
+  }, [editingTodoId]);
   const selectedList = lists.find((list) => list.id === selectedListId) ?? lists[0];
   const listTodos = todos.filter((todo) => todo.listId === selectedList?.id);
   const pendingTodos = listTodos.filter((todo) => !todo.done);
@@ -54,15 +76,15 @@ export function TodoScreen({ theme }: { theme: ThemeSettings }) {
   };
   const createList = () => { if (!newListName.trim()) return; const id = addList(newListName.trim()); setSelectedListId(id); setNewListName(""); setShowAddListMenu(false); };
   const inputStyle = inputDynamic(theme);
-  const renderTodoRows = (items: typeof listTodos) => items.map((todo) => {
+  const renderTodoRows = (items: typeof listTodos, panelY: { current: number }) => items.map((todo) => {
     const editing = editingTodoId === todo.id;
-    return <View key={todo.id} className="flex-row items-center border-b py-3" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}>
+    return <View key={todo.id} onLayout={(event) => { todoRowY.current.set(todo.id, panelY.current + event.nativeEvent.layout.y); }} className="flex-row items-center border-b py-3" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}>
       <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: todo.done }} accessibilityLabel={todo.done ? `Marcar ${todo.text} como pendente` : `Concluir ${todo.text}`} onPress={() => toggleTodo(todo.id)} className="mr-3 h-6 w-6 items-center justify-center" style={{ backgroundColor: "transparent" }}><Svg width={24} height={24} viewBox="0 0 24 24"><Rect x={3} y={3} width={18} height={18} rx={Math.min(theme.borderRadius, 5)} fill={todo.done ? theme.primary : theme.raised} stroke={theme.border} strokeWidth={theme.borderWidth} />{todo.done ? <Path d="m7 12 3.2 3.2L17.5 8" fill="none" stroke={theme.background} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /> : null}</Svg></Pressable>
       {editing ? <TextInput accessibilityLabel="Editar tarefa" autoFocus value={editTodoText} onChangeText={setEditTodoText} onSubmitEditing={saveTodoEdit} returnKeyType="done" style={[inputStyle, { flex: 1 }]} /> : <Text className={`flex-1 text-sm ${todo.done ? "line-through" : ""}`} style={{ color: todo.done ? theme.muted : theme.text, fontFamily: fontFamily(theme.font) }}>{todo.text}</Text>}
       {editing ? <View className="ml-2 flex-row items-center gap-1"><Action theme={theme} onPress={saveTodoEdit}>Salvar</Action><Pressable accessibilityRole="button" accessibilityLabel="Cancelar edição" onPress={() => { setEditingTodoId(null); setEditTodoText(""); }} className="h-8 w-8 items-center justify-center"><AppIcon name="close" size={16} color={theme.muted} /></Pressable></View> : <View className="ml-2 flex-row items-center gap-1"><Pressable accessibilityRole="button" accessibilityLabel={`Editar ${todo.text}`} onPress={() => { setEditingTodoId(todo.id); setEditTodoText(todo.text); }} className="h-8 w-8 items-center justify-center"><AppIcon name="pencil" size={18} color={theme.primary} /></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`Excluir ${todo.text}`} onPress={() => removeTodo(todo.id)} className="h-8 w-8 items-center justify-center"><AppIcon name="trash" size={18} color={theme.primary} /></Pressable></View>}
     </View>;
   });
-  return <KeyboardAwareScrollView className="flex-1" keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"} contentContainerStyle={{ padding: 18, paddingBottom: keyboardHeight + 28 }}>
+  return <ScrollView ref={scrollRef} className="flex-1" keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"} contentContainerStyle={{ padding: 18, paddingBottom: keyboardHeight + 28 }}>
     <View className="mb-5 flex-row items-end justify-between"><View className="flex-1 pr-2"><Eyebrow theme={theme}>FOCO DO DIA</Eyebrow><Title theme={theme}>Tarefas</Title><Body numberOfLines={1} theme={theme}>Organize suas tarefas em listas separadas.</Body></View><View className="items-end"><Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-xl font-black">{completed}/{listTodos.length}</Text><Small theme={theme}>concluídas</Small></View></View>
     <Panel theme={theme}>
       <View className="mb-3"><SectionTitle theme={theme}>Suas listas</SectionTitle></View>
@@ -83,11 +105,11 @@ export function TodoScreen({ theme }: { theme: ThemeSettings }) {
       {renaming && selectedList ? <View className="mt-3 flex-row gap-2"><TextInput accessibilityLabel="Renomear lista" value={renameText} onChangeText={setRenameText} onSubmitEditing={() => { if (renameText.trim()) renameList(selectedList.id, renameText.trim()); setRenaming(false); }} returnKeyType="done" placeholder="Nome da lista" placeholderTextColor={theme.muted} style={[inputStyle, { flex: 1 }]} /><Action theme={theme} onPress={() => { if (renameText.trim()) renameList(selectedList.id, renameText.trim()); setRenaming(false); }}>Salvar</Action><Action theme={theme} secondary onPress={() => setRenaming(false)}>Cancelar</Action></View> : null}
       {lists.length > 1 && selectedList && confirmDeleteList ? <View className="mt-2"><View className="flex-row flex-wrap items-center gap-2"><Body theme={theme}>Excluir “{selectedList.name}” e suas tarefas?</Body><Action theme={theme} danger onPress={() => { const remaining = lists.find((list) => list.id !== selectedList.id); removeList(selectedList.id); if (remaining) setSelectedListId(remaining.id); setConfirmDeleteList(false); }}>Excluir lista</Action><Action theme={theme} secondary onPress={() => setConfirmDeleteList(false)}>Cancelar</Action></View></View> : null}
     </Panel>
-    <Panel theme={theme}><View className="flex-row gap-2"><TextInput accessibilityLabel="Nova tarefa" value={text} onChangeText={setText} placeholder={selectedList ? `Adicionar tarefa em ${selectedList.name}` : "Escreva uma tarefa"} placeholderTextColor={theme.muted} onSubmitEditing={createTodo} returnKeyType="done" style={[inputStyle, { flex: 1 }]} /><Action theme={theme} icon="plus" onPress={createTodo}>Adicionar</Action></View>
+    <View onLayout={(event) => { taskPanelY.current = event.nativeEvent.layout.y; }}><Panel theme={theme}><View className="flex-row gap-2"><TextInput accessibilityLabel="Nova tarefa" value={text} onChangeText={setText} placeholder={selectedList ? `Adicionar tarefa em ${selectedList.name}` : "Escreva uma tarefa"} placeholderTextColor={theme.muted} onSubmitEditing={createTodo} returnKeyType="done" style={[inputStyle, { flex: 1 }]} /><Action theme={theme} icon="plus" onPress={createTodo}>Adicionar</Action></View>
       <View className="mb-3 mt-5"><SectionTitle theme={theme}>{selectedList?.name ?? "Tarefas"}</SectionTitle></View>
-      {pendingTodos.length ? renderTodoRows(pendingTodos) : <View className="items-center py-7"><AppIcon name={completed ? "check" : "tasks"} size={26} color={theme.primary} /><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mt-1 font-bold">{completed ? "Tudo concluído" : "Lista vazia"}</Text><Body theme={theme}>{completed ? "As tarefas concluídas estão recolhidas abaixo." : "Adicione a primeira tarefa desta lista."}</Body></View>}
+      {pendingTodos.length ? renderTodoRows(pendingTodos, taskPanelY) : <View className="items-center py-7"><AppIcon name={completed ? "check" : "tasks"} size={26} color={theme.primary} /><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mt-1 font-bold">{completed ? "Tudo concluído" : "Lista vazia"}</Text><Body theme={theme}>{completed ? "As tarefas concluídas estão recolhidas abaixo." : "Adicione a primeira tarefa desta lista."}</Body></View>}
       {listTodos.length ? <View className="mt-2"><Small theme={theme}>{pendingTodos.length} pendente{pendingTodos.length === 1 ? "" : "s"} · salvas neste dispositivo</Small></View> : null}
-    </Panel>
-    {completedTodos.length ? <Panel theme={theme}><View className="flex-row items-center gap-2"><Pressable accessibilityRole="button" accessibilityState={{ expanded: showCompleted }} onPress={() => setShowCompleted((value) => !value)} className="min-h-8 flex-1 flex-row items-center gap-2"><SectionTitle theme={theme}>Concluídas</SectionTitle><View className="px-2 py-0.5" style={{ backgroundColor: theme.primary, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text style={{ color: theme.background, fontFamily: fontFamily(theme.font) }} className="text-[9px] font-bold">{completedTodos.length}</Text></View><AppIcon name={showCompleted ? "chevronUp" : "chevronDown"} size={17} color={theme.primary} /></Pressable><LinkText theme={theme} onPress={() => { if (selectedList) uncheckCompleted(selectedList.id); }}>Desmarcar todas</LinkText></View>{showCompleted ? <View className="mt-2"><View className="mb-1 flex-row justify-end"><LinkText theme={theme} onPress={() => { if (selectedList) clearCompleted(selectedList.id); }}>Limpar concluídas</LinkText></View>{renderTodoRows(completedTodos)}</View> : null}</Panel> : null}
-  </KeyboardAwareScrollView>;
+    </Panel></View>
+    {completedTodos.length ? <View onLayout={(event) => { completedPanelY.current = event.nativeEvent.layout.y; }}><Panel theme={theme}><View className="flex-row items-center gap-2"><Pressable accessibilityRole="button" accessibilityState={{ expanded: showCompleted }} onPress={() => setShowCompleted((value) => !value)} className="min-h-8 flex-1 flex-row items-center gap-2"><SectionTitle theme={theme}>Concluídas</SectionTitle><View className="px-2 py-0.5" style={{ backgroundColor: theme.primary, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text style={{ color: theme.background, fontFamily: fontFamily(theme.font) }} className="text-[9px] font-bold">{completedTodos.length}</Text></View><AppIcon name={showCompleted ? "chevronUp" : "chevronDown"} size={17} color={theme.primary} /></Pressable><LinkText theme={theme} onPress={() => { if (selectedList) uncheckCompleted(selectedList.id); }}>Desmarcar todas</LinkText></View>{showCompleted ? <View className="mt-2" onLayout={(event) => { completedRowsY.current = completedPanelY.current + event.nativeEvent.layout.y; }}><View className="mb-1 flex-row justify-end"><LinkText theme={theme} onPress={() => { if (selectedList) clearCompleted(selectedList.id); }}>Limpar concluídas</LinkText></View>{renderTodoRows(completedTodos, completedRowsY)}</View> : null}</Panel></View> : null}
+  </ScrollView>;
 }

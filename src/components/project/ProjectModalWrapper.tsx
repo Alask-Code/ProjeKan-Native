@@ -6,7 +6,7 @@ export function ProjectModalWrapper({ visible, theme, onClose, children }: { vis
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose} statusBarTranslucent>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.6)" }}>
-        <View style={{ maxHeight: "94%", backgroundColor: theme.background, borderColor: theme.border, borderTopWidth: theme.borderWidth, borderTopLeftRadius: theme.borderRadius, borderTopRightRadius: theme.borderRadius, overflow: "hidden" }}>
+        <View style={{ height: "94%", backgroundColor: theme.background, borderColor: theme.border, borderTopWidth: theme.borderWidth, borderTopLeftRadius: theme.borderRadius, borderTopRightRadius: theme.borderRadius, overflow: "hidden" }}>
           {children}
         </View>
       </KeyboardAvoidingView>
