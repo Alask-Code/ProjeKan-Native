@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View, useWindowDimensions } from "react-native";
 import useThemeStore, { defaultTheme, themePresets, ThemeSettings } from "../stores/themeStore";
 import brandMark from "../assets/projekan-mark.png";
 import { colors, fonts } from "../constants/app";
@@ -8,6 +8,8 @@ import Stepper from "../components/theme/Stepper";
 import ColorSpectrumPicker from "../components/theme/ColorSpectrumPicker";
 import { fontFamily, inputDynamic, themePaletteEqual, themeSettingsEqual } from "../utils/theme";
 export function ThemeEditorScreen({ theme, onDirtyChange }: { theme: ThemeSettings; onDirtyChange?: (dirty: boolean) => void }) {
+  const { height: windowHeight } = useWindowDimensions();
+  const [paletteModalHeight, setPaletteModalHeight] = useState(windowHeight);
   const savedSettings = useThemeStore((state) => state.settings);
   const saveSettings = useThemeStore((state) => state.saveSettings);
   const [draft, setDraft] = useState<ThemeSettings>(() => ({ ...savedSettings }));
@@ -50,17 +52,38 @@ export function ThemeEditorScreen({ theme, onDirtyChange }: { theme: ThemeSettin
       </View>
     </View>
         <Panel theme={theme}><Pressable accessibilityRole="button" accessibilityState={{ expanded: showInterfaceColors }} onPress={() => setShowInterfaceColors((open) => !open)} className="flex-row items-center justify-between"><View className="flex-1 pr-3"><SectionTitle theme={theme}>Cores da interface</SectionTitle><Body theme={theme}>Toque para ver e editar as cores.</Body></View><AppIcon name={showInterfaceColors ? "chevronUp" : "chevronDown"} size={18} color={theme.primary} /></Pressable>{showInterfaceColors ? <View className="mt-2">{colors.map((color) => <Pressable key={color.key} accessibilityRole="button" accessibilityLabel={`Editar ${color.label}`} onPress={() => setActiveColor(color)} className="mt-2 flex-row items-center gap-3 border-b py-2" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}><View className="h-9 w-9" style={{ backgroundColor: String(draft[color.key]), borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }} /><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="flex-1 text-xs">{color.label}</Text><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[10px]">{String(draft[color.key]).toUpperCase()}</Text><AppIcon name="chevronDown" size={16} color={theme.muted} /></Pressable>)}</View> : null}</Panel>
-    <Modal transparent animationType="fade" visible={activeColor !== null && !showSpectrumPicker} onRequestClose={() => setActiveColor(null)}><View className="flex-1 justify-center px-6" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}><Pressable accessibilityRole="button" accessibilityLabel="Fechar seletor de cor" onPress={() => setActiveColor(null)} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} /><View className="p-4" style={{ maxHeight: "80%", backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius, elevation: 24 }}><View className="mb-3 flex-row items-center justify-between"><View><SectionTitle theme={theme}>{activeColor?.label ?? "Escolher cor"}</SectionTitle><Body theme={theme}>Escolha uma amostra ou digite o código hexadecimal.</Body></View><Pressable accessibilityRole="button" accessibilityLabel="Fechar" onPress={() => setActiveColor(null)}><AppIcon name="close" size={20} color={theme.text} /></Pressable></View>{activeColor ? <><View className="mb-3 flex-row items-center gap-3"><Pressable accessibilityRole="button" accessibilityLabel="Abrir seletor RGB" onPress={() => setShowSpectrumPicker(true)} className="h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: String(draft[activeColor.key]), borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><AppIcon name="pencil" size={15} color={theme.background} /></Pressable><TextInput accessibilityLabel="Código hexadecimal da cor" value={String(draft[activeColor.key])} onChangeText={(value) => update(activeColor.key, value)} autoCapitalize="characters" maxLength={7} style={[inputDynamic(theme), { flex: 1, paddingVertical: 9, textAlign: "center" }]} /></View><ScrollView style={{ maxHeight: 320 }} showsVerticalScrollIndicator keyboardShouldPersistTaps="handled"><View className="flex-row flex-wrap gap-2">{colorChoices.map((value) => { const selected = String(draft[activeColor.key]).toLowerCase() === value.toLowerCase(); return <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected }} accessibilityLabel={`Usar cor ${value}`} onPress={() => update(activeColor.key, value)} className="h-9 w-9 items-center justify-center" style={{ backgroundColor: value, borderColor: selected ? theme.text : theme.border, borderWidth: 2, borderRadius: theme.borderRadius }}>{selected ? <AppIcon name="check" size={16} color={theme.text} /> : null}</Pressable>; })}</View></ScrollView><View className="mt-3 flex-row items-center justify-between"><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[9px]">Toque na cor atual para abrir o espectro RGB.</Text><Action theme={theme} onPress={() => setActiveColor(null)}>Concluir</Action></View></> : null}</View></View></Modal>
+    <Modal transparent animationType="fade" visible={activeColor !== null && !showSpectrumPicker} onRequestClose={() => setActiveColor(null)}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
+      <View onLayout={(event) => setPaletteModalHeight(event.nativeEvent.layout.height)} className="flex-1 justify-center px-6" style={{ backgroundColor: "rgba(0,0,0,0.45)" }}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Fechar seletor de cor" onPress={() => setActiveColor(null)} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
+        <View className="p-4" style={{ height: Math.min(paletteModalHeight * 0.8, 560), flexDirection: "column", backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius, elevation: 24 }}>
+          <View className="mb-3 flex-row items-center justify-between">
+            <View className="flex-1 pr-2"><SectionTitle theme={theme}>{activeColor?.label ?? "Escolher cor"}</SectionTitle><Body theme={theme}>Escolha uma amostra ou digite o código hexadecimal.</Body></View>
+            <Pressable accessibilityRole="button" accessibilityLabel="Fechar" onPress={() => setActiveColor(null)}><AppIcon name="close" size={20} color={theme.text} /></Pressable>
+          </View>
+          {activeColor ? <>
+            <View className="mb-3 flex-row items-center gap-3">
+              <Pressable accessibilityRole="button" accessibilityLabel="Abrir seletor RGB" onPress={() => setShowSpectrumPicker(true)} className="h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: String(draft[activeColor.key]), borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><AppIcon name="pencil" size={15} color={theme.background} /></Pressable>
+              <TextInput accessibilityLabel="Código hexadecimal da cor" value={String(draft[activeColor.key])} onChangeText={(value) => update(activeColor.key, value)} autoCapitalize="characters" maxLength={7} style={[inputDynamic(theme), { flex: 1, paddingVertical: 9, textAlign: "center" }]} />
+            </View>
+            <ScrollView style={{ flex: 1, minHeight: 0 }} showsVerticalScrollIndicator keyboardShouldPersistTaps="handled">
+              <View className="flex-row flex-wrap gap-2">{colorChoices.map((value) => { const selected = String(draft[activeColor.key]).toLowerCase() === value.toLowerCase(); return <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected }} accessibilityLabel={`Usar cor ${value}`} onPress={() => update(activeColor.key, value)} className="h-9 w-9 items-center justify-center" style={{ backgroundColor: value, borderColor: selected ? theme.text : theme.border, borderWidth: 2, borderRadius: theme.borderRadius }}>{selected ? <AppIcon name="check" size={16} color={theme.text} /> : null}</Pressable>; })}</View>
+            </ScrollView>
+            <View className="mt-3 flex-row items-center gap-2">
+              <Text numberOfLines={1} style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="flex-1 text-[9px]">Toque na cor para abrir o espectro RGB.</Text>
+              <View className="shrink-0">
+                <Action theme={theme} onPress={() => setActiveColor(null)}>Concluir</Action>
+              </View>
+            </View>
+          </> : null}
+        </View>
+      </View>
+      </KeyboardAvoidingView>
+    </Modal>
     <ColorSpectrumPicker visible={showSpectrumPicker && activeColor !== null} color={activeColor ? String(draft[activeColor.key]) : "#000000"} label={activeColor?.label ?? "Escolher cor"} theme={theme} onClose={() => setShowSpectrumPicker(false)} onApply={(value) => { if (activeColor) update(activeColor.key, value); }} />
     <Panel theme={theme}><Pressable accessibilityRole="button" accessibilityState={{ expanded: showTypography }} onPress={() => setShowTypography((open) => !open)} className="flex-row items-center justify-between"><View className="flex-1 pr-3"><SectionTitle theme={theme}>Forma e tipografia</SectionTitle><Body theme={theme}>Defina o acabamento dos componentes.</Body></View><AppIcon name={showTypography ? "chevronUp" : "chevronDown"} size={18} color={theme.primary} /></Pressable>{showTypography ? <View className="mt-3"><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mb-2 mt-1 text-xs font-bold">Fonte da interface</Text><View className="flex-row flex-wrap gap-2">{fonts.map((font) => { const active = draft.font === font; return <Pressable key={font} accessibilityRole="button" accessibilityState={{ selected: active }} onPress={() => update("font", font)} className="px-3 py-2" style={{ backgroundColor: active ? theme.primary : theme.raised, borderColor: active ? theme.primary : theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text style={{ color: active ? theme.background : theme.text, fontFamily: fontFamily(font) }} className="text-[10px] font-bold">{font.split(",")[0].replaceAll('"', "")}</Text></Pressable>; })}</View><Stepper theme={theme} label="Arredondamento" value={draft.borderRadius} min={0} max={24} onChange={(value) => update("borderRadius", value)} suffix="px" /><Stepper theme={theme} label="Espessura das bordas" value={draft.borderWidth} min={0} max={5} onChange={(value) => update("borderWidth", value)} suffix="px" /></View> : null}</Panel>
   </KeyboardAwareScrollView>;
 }
-
-
-
-
-
-
 
 
 

@@ -13,7 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import brandMark from "./assets/projekan-mark.png";
 import useNativeProjects from "./stores/nativeProjectStore";
 import useTodoStore from "./stores/todoStore";
-import { createBackupCsv, parseBackupCsv } from "./utils/csvBackup";
+import { createDataSeed, parseDataSeed } from "./utils/dataSeed";
 import useThemeStore from "./stores/themeStore";
 import { navigation, type Route } from "./constants/app";
 import { BoardScreen } from "./pages/BoardPage";
@@ -47,7 +47,6 @@ function AppContent() {
   const updateProject = useNativeProjects((state) => state.updateProject);
   const deleteProject = useNativeProjects((state) => state.deleteProject);
   const clearAllProjects = useNativeProjects((state) => state.clearAllProjects);
-  const removeTemplateProjects = useNativeProjects((state) => state.removeTemplateProjects);
   const clearAllTodos = useTodoStore((state) => state.clearAllTodos);
   const lists = useTodoStore((state) => state.lists);
   const todos = useTodoStore((state) => state.todos);
@@ -57,7 +56,7 @@ function AppContent() {
   const moveProjectToPosition = useNativeProjects((state) => state.moveProjectToPosition);
   const theme = useThemeStore((state) => state.settings);
   const { showDialog, dialogModal } = useAppDialog(theme);
-  const completeOnboarding = () => { removeTemplateProjects(); finishOnboarding(); };
+  const completeOnboarding = finishOnboarding;
   useEffect(() => {
     let active = true;
     AsyncStorage.getItem("projekan-last-route").then((savedRoute) => {
@@ -142,15 +141,15 @@ function AppContent() {
         <ProjectFormModal visible={creating} project={null} theme={theme} onClose={() => setCreating(false)} onSave={(draft) => { saveProject(draft); setCreating(false); }} />
         <ProjectDetailsModal project={selectedProject} projects={projects} theme={theme} onClose={() => setEditingId(null)} onEdit={() => { if (!selectedProject) return; const project = selectedProject; setEditingId(null); setTimeout(() => setEditingId(-project.id), 0); }} onDelete={(id) => { deleteProject(id); setEditingId(null); }} onUpdate={updateProject} />
         <ProjectFormModal visible={editingId !== null && editingId < 0} project={editingId ? projects.find((project) => project.id === Math.abs(editingId)) ?? null : null} theme={theme} onClose={() => setEditingId(null)} onSave={(draft) => { if (editingId) updateProject(Math.abs(editingId), draft); setEditingId(null); }} />
-        <ProfilePhotoModal visible={editingProfilePhoto} value={profilePhoto ?? ""} name={profileName} theme={theme} onClose={() => setEditingProfilePhoto(false)} onShowTutorial={() => { setEditingProfilePhoto(false); openOnboarding(); }} onOpenTheme={() => { setEditingProfilePhoto(false); setRoute("/theme-editor"); }} onOpenSettings={() => { setEditingProfilePhoto(false); setShowSettings(true); }} onShowDialog={showDialog} onExportCsv={() => createBackupCsv({ projects, lists, todos })} onImportCsv={(csv) => {
+        <ProfilePhotoModal visible={editingProfilePhoto} value={profilePhoto ?? ""} name={profileName} theme={theme} onClose={() => setEditingProfilePhoto(false)} onShowTutorial={() => { setEditingProfilePhoto(false); setTimeout(openOnboarding, 350); }} onOpenTheme={() => { setEditingProfilePhoto(false); setRoute("/theme-editor"); }} onOpenSettings={() => { setEditingProfilePhoto(false); setShowSettings(true); }} onShowDialog={showDialog} onExportSeed={() => createDataSeed({ projects, lists, todos })} onImportSeed={(seed) => {
           try {
-            const backup = parseBackupCsv(csv);
-            showDialog({ title: "Substituir dados atuais?", message: `O CSV contém ${backup.projects.length} projetos, ${backup.lists.length} listas e ${backup.todos.length} tarefas. Os dados atuais dessas áreas serão substituídos.`, actions: [
+            const backup = parseDataSeed(seed);
+            showDialog({ title: "Substituir dados atuais?", message: `A seed contém ${backup.projects.length} projetos, ${backup.lists.length} listas e ${backup.todos.length} tarefas. Os dados atuais dessas áreas serão substituídos.`, actions: [
               { text: "Cancelar", style: "cancel" },
-              { text: "Importar", onPress: () => { importProjects(backup.projects); importTodos(backup.lists, backup.todos); showDialog({ title: "Importação concluída", message: "Projetos e tarefas foram restaurados do CSV.", actions: [{ text: "Entendi" }] }); } },
+              { text: "Importar", onPress: () => { importProjects(backup.projects); importTodos(backup.lists, backup.todos); showDialog({ title: "Importação concluída", message: "Projetos, listas e tarefas foram restaurados da seed.", actions: [{ text: "Entendi" }] }); } },
             ] });
           } catch (error) {
-            showDialog({ title: "CSV inválido", message: error instanceof Error ? error.message : "Confira o arquivo e tente novamente.", actions: [{ text: "Entendi" }] });
+            showDialog({ title: "Seed inválida", message: error instanceof Error ? error.message : "Confira a seed e tente novamente.", actions: [{ text: "Entendi" }] });
           }
         }} onSave={(photo, name) => { const nextName = name.trim() || "Meu perfil"; saveProfile(photo, nextName); setEditingProfilePhoto(false); }} />
         <SettingsModal visible={showSettings} theme={theme} onClose={() => { setShowSettings(false); setEditingProfilePhoto(true); }} onDeleteAll={() => showDialog({ title: "Apagar todo o conteúdo salvo?", message: "Isso remove projetos, listas e tarefas, restaura o tema padrão e apaga os dados do perfil. Essa ação não pode ser desfeita.", actions: [{ text: "Cancelar", style: "cancel" }, { text: "Apagar tudo", style: "destructive", onPress: deleteAllSavedData }] })} onShowDialog={showDialog} />

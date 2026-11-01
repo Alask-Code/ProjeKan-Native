@@ -4,7 +4,7 @@ import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { ThemeSettings } from "../stores/themeStore";
 import { cardStyle, fontFamily } from "../utils/theme";
 
-export type AppIconName = "plus" | "minus" | "chevronDown" | "chevronUp" | "chevronLeft" | "chevronRight" | "more" | "close" | "eye" | "eyeOff" | "settings" | "arrowUp" | "arrowUpRight" | "check" | "pencil" | "trash" | "clock" | "calendar" | "document" | "drive" | "github" | "board" | "overview" | "backlog" | "tasks";
+export type AppIconName = "plus" | "minus" | "chevronDown" | "chevronUp" | "chevronLeft" | "chevronRight" | "more" | "close" | "eye" | "eyeOff" | "settings" | "help" | "palette" | "download" | "upload" | "arrowUp" | "arrowUpRight" | "check" | "pencil" | "trash" | "clock" | "calendar" | "document" | "drive" | "github" | "board" | "overview" | "backlog" | "tasks";
 
 export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: AppIconName; size?: number; color: string; strokeWidth?: number }) {
   const common = { fill: "none" as const, stroke: color, strokeWidth, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -20,6 +20,10 @@ export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: A
     {name === "eye" ? <><Path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" {...common} /><Circle cx={12} cy={12} r={2.5} {...common} /></> : null}
     {name === "eyeOff" ? <><Path d="M3 3 21 21M10.6 6.2A10.6 10.6 0 0 1 12 6c6.1 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.7M6.2 6.3C3.8 7.8 2.5 12 2.5 12s3.4 6 9.5 6c1.1 0 2.1-.2 3-.5" {...common} /><Path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" {...common} /></> : null}
     {name === "settings" ? <><Path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" {...common} /><Path d="m19.4 13.5 1.1.8-1.2 2.1-1.3-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.4h-2.5l-.3-1.4a7.8 7.8 0 0 1-1.5-.9l-1.3.5-1.2-2.1 1.1-.8a7.1 7.1 0 0 1 0-1.8l-1.1-.8 1.2-2.1 1.3.5a7.8 7.8 0 0 1 1.5-.9l.3-1.4h2.5l.2 1.4a7.8 7.8 0 0 1 1.5.9l1.3-.5 1.2 2.1-1.1.8a7.1 7.1 0 0 1 0 1.8Z" transform="translate(-1.5 -2)" {...common} /></> : null}
+    {name === "help" ? <><Circle cx={12} cy={12} r={9} {...common} /><Path d="M9.6 9a2.5 2.5 0 1 1 4.2 1.8c-1.1 1-1.8 1.4-1.8 3.2" {...common} /><Circle cx={12} cy={17.5} r={0.7} fill={color} /></> : null}
+    {name === "palette" ? <><Path d="M12 3a9 9 0 1 0 0 18h1.2a2 2 0 0 0 1.5-3.3 1.5 1.5 0 0 1 1.2-2.5H18a3 3 0 0 0 3-3c0-5.1-4-9.2-9-9.2Z" {...common} /><Circle cx={7.5} cy={11} r={0.8} fill={color} /><Circle cx={10} cy={7.5} r={0.8} fill={color} /><Circle cx={14} cy={7.5} r={0.8} fill={color} /></> : null}
+    {name === "download" ? <><Path d="M12 3v12m-5-5 5 5 5-5M5 19h14" {...common} /></> : null}
+    {name === "upload" ? <><Path d="M12 16V4m-5 5 5-5 5 5M5 20h14" {...common} /></> : null}
     {name === "arrowUp" ? <Path d="M12 19V5m-7 7 7-7 7 7" {...common} /> : null}
     {name === "arrowUpRight" ? <Path d="M7 17 17 7M8 7h9v9" {...common} /> : null}
     {name === "check" ? <Path d="m5 12 4.5 4.5L19 7" {...common} /> : null}

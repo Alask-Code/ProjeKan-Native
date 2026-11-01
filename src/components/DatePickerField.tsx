@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, Pressable, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, View, useWindowDimensions, type StyleProp, type ViewStyle } from "react-native";
 import { ThemeSettings } from "../stores/themeStore";
 import { Action, AppIcon } from "./ui";
 import { fontFamily, inputDynamic } from "../utils/theme";
@@ -41,6 +41,7 @@ export function formatDateValue(value: string) {
 }
 
 export function DatePickerField({ value, onChange, theme, placeholder = "Selecionar data", accessibilityLabel, style }: { value: string; onChange: (value: string) => void; theme: ThemeSettings; placeholder?: string; accessibilityLabel?: string; style?: StyleProp<ViewStyle> }) {
+  const { height } = useWindowDimensions();
   const [visible, setVisible] = useState(false);
   const [draftDate, setDraftDate] = useState(() => parseDate(value));
   const [displayedMonth, setDisplayedMonth] = useState(() => firstOfMonth(parseDate(value)));
@@ -65,9 +66,10 @@ export function DatePickerField({ value, onChange, theme, placeholder = "Selecio
       <AppIcon name="calendar" size={17} color={theme.primary} />
     </Pressable>
     <Modal transparent animationType="fade" visible={visible} onRequestClose={() => setVisible(false)}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
       <View className="flex-1 justify-center bg-black/60 px-5">
         <Pressable accessibilityRole="button" accessibilityLabel="Fechar seletor de data" onPress={() => setVisible(false)} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
-        <View className="w-full self-center p-4" style={{ maxWidth: 380, backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
+        <View className="w-full self-center p-4" style={{ maxWidth: 380, maxHeight: height * 0.9, flexShrink: 1, backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
           <View className="mb-4 flex-row items-center justify-between">
             <View>
               <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font), letterSpacing: 1 }} className="text-[9px] font-extrabold">DATA DO PROJETO</Text>
@@ -77,6 +79,7 @@ export function DatePickerField({ value, onChange, theme, placeholder = "Selecio
               <Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-[9px] font-extrabold">HOJE</Text>
             </Pressable>
           </View>
+          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 4 }} keyboardShouldPersistTaps="handled">
           <View className="mb-3 flex-row items-center justify-between">
             <Pressable accessibilityRole="button" accessibilityLabel="Mês anterior" onPress={() => setDisplayedMonth((month) => shiftMonth(month, -1))} className="h-10 w-10 items-center justify-center rounded-lg" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
               <AppIcon name="chevronLeft" size={18} color={theme.text} />
@@ -106,12 +109,14 @@ export function DatePickerField({ value, onChange, theme, placeholder = "Selecio
             </View>)}
           </View>
           <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="mt-3 text-center text-[10px]">{draftDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</Text>
+          </ScrollView>
           <View className="mt-4 flex-row justify-end gap-2">
             <Action theme={theme} secondary onPress={() => setVisible(false)}>Cancelar</Action>
             <Action theme={theme} onPress={() => { onChange(serializeDate(draftDate)); setVisible(false); }}>Confirmar</Action>
           </View>
         </View>
       </View>
+      </KeyboardAvoidingView>
     </Modal>
   </>;
 }

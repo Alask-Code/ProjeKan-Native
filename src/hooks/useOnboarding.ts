@@ -23,7 +23,7 @@ function hasSavedUserData(values: (string | null)[]) {
   const [, projectsRaw, todosRaw, photoRaw, nameRaw] = values;
   const projectsState = parseStoredValue(projectsRaw);
   const projects = projectsState?.state?.projects ?? projectsState?.projects;
-  if (Array.isArray(projects) && projects.some((project) => !project.isTemplate)) return true;
+  if (Array.isArray(projects) && projects.length > 0) return true;
 
   const todosState = parseStoredValue(todosRaw);
   const todos = todosState?.state?.todos ?? todosState?.todos;

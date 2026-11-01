@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Pressable, Text, View } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { ThemeSettings } from "../../stores/themeStore";
 import { Action, AppIcon } from "../ui";
 import { fontFamily } from "../../utils/theme";
@@ -13,10 +13,12 @@ export default function ReminderTimePickerModal({ visible, time, theme, onClose,
   onSetMinute: (minute: number) => void;
   onConfirm: (time: Date) => void;
 }) {
+  const { height } = useWindowDimensions();
   return <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
     <View className="flex-1 justify-center bg-black/60 px-5">
       <Pressable accessibilityRole="button" accessibilityLabel="Fechar horário" onPress={onClose} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
-      <View className="w-full self-center p-5" style={{ maxWidth: 380, backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
+      <View className="w-full self-center p-5" style={{ maxWidth: 380, maxHeight: height * 0.9, flexShrink: 1, backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
         <View className="mb-5 flex-row items-center justify-between">
           <View>
             <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font), letterSpacing: 1 }} className="text-[9px] font-extrabold">LEMBRETE DIÁRIO</Text>
@@ -26,6 +28,7 @@ export default function ReminderTimePickerModal({ visible, time, theme, onClose,
             <AppIcon name="clock" size={20} color={theme.primary} />
           </View>
         </View>
+        <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ paddingBottom: 4 }}>
         <View className="mb-4 flex-row items-center gap-3">
           {(["hour", "minute"] as const).map((unit) => {
             const value = unit === "hour" ? time.getHours() : time.getMinutes();
@@ -57,11 +60,13 @@ export default function ReminderTimePickerModal({ visible, time, theme, onClose,
             </Pressable>;
           })}
         </View>
+        </ScrollView>
         <View className="mt-5 flex-row justify-end gap-2">
           <Action theme={theme} secondary onPress={onClose}>Cancelar</Action>
           <Action theme={theme} onPress={() => onConfirm(time)}>Salvar horário</Action>
         </View>
       </View>
     </View>
+    </KeyboardAvoidingView>
   </Modal>;
 }
