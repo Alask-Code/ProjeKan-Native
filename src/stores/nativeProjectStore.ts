@@ -1,8 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import logoImage from "../assets/logo.jpg";
-import backgroundImage from "../assets/bkgImage.png";
 
 export type ProjectStatus = "unstarted" | "progress" | "finished" | "continuous" | "warning" | "archived";
 export type ProjectPropertyType = "text" | "number" | "date" | "select" | "checkbox" | "url" | "releases";
@@ -47,8 +45,8 @@ type Store = {
 
 const now = Date.now();
 const starterProjects: Project[] = [
-  { id: 1, name: "Outland's Edge", description: "Survive the division, fight for freedom.", status: "progress", category: "in-development", priority: "Alta", owner: "Equipe", createdAt: now, logo: logoImage, backgroundImage, notes: "" },
-  { id: 2, name: "Novo projeto", description: "Organize as primeiras entregas e defina os próximos passos.", status: "unstarted", category: "unstarted", priority: "Média", owner: "", createdAt: now, logo: logoImage, backgroundImage, notes: "" },
+  { id: 1, name: "Outland's Edge", description: "Survive the division, fight for freedom.", status: "progress", category: "in-development", priority: "Alta", owner: "Equipe", createdAt: now, notes: "" },
+  { id: 2, name: "Novo projeto", description: "Organize as primeiras entregas e defina os próximos passos.", status: "unstarted", category: "unstarted", priority: "Média", owner: "", createdAt: now, notes: "" },
 ];
 const demoProjectDetails: { name: string; description: string; status: ProjectStatus; priority: Project["priority"] }[] = [
   { name: "Portal do cliente", description: "Centralizar solicitações, documentos e atualizações dos clientes.", status: "unstarted", priority: "Alta" },
@@ -123,15 +121,26 @@ const useNativeProjects = create<Store>()(persist((set, get) => ({
 }), {
   name: "projekan-projects-native",
   storage: createJSONStorage(() => AsyncStorage),
-  version: 3,
+  version: 5,
   migrate: (persisted: any) => {
-    const projects = Array.isArray(persisted?.projects) ? persisted.projects as Project[] : starterProjects;
+    const hasPersistedState = persisted && typeof persisted === "object" && Object.keys(persisted).length > 0;
+    const projects = Array.isArray(persisted?.projects)
+      ? persisted.projects as Project[]
+      : hasPersistedState ? [] : starterProjects;
     const validStatuses: ProjectStatus[] = ["unstarted", "progress", "finished", "continuous", "warning", "archived"];
     const hiddenColumns = Array.isArray(persisted?.hiddenColumns) ? persisted.hiddenColumns.filter((status: unknown): status is ProjectStatus => validStatuses.includes(status as ProjectStatus)) : [];
-    const markedProjects = projects.map((project) => ({ ...project, isTemplate: project.isTemplate ?? templateProjectNames.has(project.name) }));
-    if (markedProjects.some((project) => project.isTemplate)) return { ...persisted, projects: markedProjects, hiddenColumns };
-    const firstId = Math.max(0, ...projects.map((project) => project.id)) + 1;
-    return { ...persisted, projects: [...markedProjects, ...createDemoProjects(firstId)], hiddenColumns };
+    const markedProjects = projects.map((project) => {
+      const isTemplate = project.isTemplate ?? templateProjectNames.has(project.name);
+      return {
+        ...project,
+        isTemplate,
+        ...(isTemplate ? {
+          logo: typeof project.logo === "number" ? undefined : project.logo,
+          backgroundImage: typeof project.backgroundImage === "number" ? undefined : project.backgroundImage,
+        } : {}),
+      };
+    });
+    return { ...persisted, projects: markedProjects, hiddenColumns };
   },
 }));
 

@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
-import { Keyboard, Pressable, ScrollView, Text, UIManager, View, type ScrollViewInstance, type ScrollViewProps } from "react-native";
+import { Keyboard, Pressable, ScrollView, Text, View, type ScrollViewInstance, type ScrollViewProps } from "react-native";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { ThemeSettings } from "../stores/themeStore";
 import { cardStyle, fontFamily } from "../utils/theme";
 
-export type AppIconName = "plus" | "minus" | "chevronDown" | "chevronUp" | "more" | "close" | "eye" | "eyeOff" | "settings" | "arrowUp" | "arrowUpRight" | "check" | "pencil" | "trash" | "clock" | "calendar" | "document" | "drive" | "github" | "board" | "overview" | "backlog" | "tasks";
+export type AppIconName = "plus" | "minus" | "chevronDown" | "chevronUp" | "chevronLeft" | "chevronRight" | "more" | "close" | "eye" | "eyeOff" | "settings" | "arrowUp" | "arrowUpRight" | "check" | "pencil" | "trash" | "clock" | "calendar" | "document" | "drive" | "github" | "board" | "overview" | "backlog" | "tasks";
 
 export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: AppIconName; size?: number; color: string; strokeWidth?: number }) {
   const common = { fill: "none" as const, stroke: color, strokeWidth, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
@@ -13,6 +13,8 @@ export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: A
     {name === "minus" ? <Path d="M5 12h14" {...common} /> : null}
     {name === "chevronDown" ? <Path d="m6 9 6 6 6-6" {...common} /> : null}
     {name === "chevronUp" ? <Path d="m6 15 6-6 6 6" {...common} /> : null}
+    {name === "chevronLeft" ? <Path d="m15 6-6 6 6 6" {...common} /> : null}
+    {name === "chevronRight" ? <Path d="m9 6 6 6-6 6" {...common} /> : null}
     {name === "more" ? <><Circle cx={5} cy={12} r={1.2} fill={color} /><Circle cx={12} cy={12} r={1.2} fill={color} /><Circle cx={19} cy={12} r={1.2} fill={color} /></> : null}
     {name === "close" ? <Path d="m6 6 12 12M18 6 6 18" {...common} /> : null}
     {name === "eye" ? <><Path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z" {...common} /><Circle cx={12} cy={12} r={2.5} {...common} /></> : null}
@@ -38,37 +40,19 @@ export function AppIcon({ name, size = 20, color, strokeWidth = 2.2 }: { name: A
 export function KeyboardAwareScrollView({ onFocusCapture, ...props }: ScrollViewProps) {
   const scrollRef = useRef<ScrollViewInstance | null>(null);
   const focusedInput = useRef<number | null>(null);
-  const currentOffset = useRef(0);
-  const keyboardTop = useRef<number | null>(null);
   const scrollFocusedInput = () => {
     const target = focusedInput.current;
-    const keyboardY = keyboardTop.current;
     const scrollView = scrollRef.current;
-    if (!target || keyboardY == null || !scrollView) return;
-
-    requestAnimationFrame(() => UIManager.measureInWindow(target, (_inputX, inputY, _inputWidth, inputHeight) => {
-      scrollView.measureInWindow((_scrollX, scrollY, _scrollWidth, scrollHeight) => {
-        const visibleBottom = Math.min(scrollY + scrollHeight, keyboardY) - 88;
-        const inputBottom = inputY + inputHeight;
-        const distanceBelow = inputBottom - visibleBottom;
-        const distanceAbove = scrollY + 8 - inputY;
-        if (distanceBelow > 0) scrollView.scrollTo({ y: currentOffset.current + distanceBelow, animated: true });
-        else if (distanceAbove > 0) scrollView.scrollTo({ y: Math.max(0, currentOffset.current - distanceAbove), animated: true });
-      });
-    }));
+    if (target == null || !scrollView) return;
+    requestAnimationFrame(() => scrollView.scrollResponderScrollNativeHandleToKeyboard(target, 24, true));
   };
   useEffect(() => {
-    const subscription = Keyboard.addListener("keyboardDidShow", (event) => {
-      keyboardTop.current = event.endCoordinates.screenY;
+    const subscription = Keyboard.addListener("keyboardDidShow", () => {
       setTimeout(scrollFocusedInput, 100);
       setTimeout(scrollFocusedInput, 260);
     });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      keyboardTop.current = null;
-    });
     return () => {
       subscription.remove();
-      hideSubscription.remove();
     };
   }, []);
   return <ScrollView ref={scrollRef} {...props} onFocusCapture={(event) => {
@@ -81,14 +65,13 @@ export function KeyboardAwareScrollView({ onFocusCapture, ...props }: ScrollView
       setTimeout(scrollFocusedInput, 260);
     }
   }} onScroll={(event) => {
-    currentOffset.current = event.nativeEvent.contentOffset.y;
     props.onScroll?.(event);
-  }} scrollEventThrottle={props.scrollEventThrottle ?? 16} />;
+  }} style={[{ flexShrink: 1 }, props.style]} scrollEventThrottle={props.scrollEventThrottle ?? 16} />;
 }
 
 export function Eyebrow({ theme, children }: { theme: ThemeSettings; children: React.ReactNode }) { return <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font), letterSpacing: 1.5 }} className="text-[9px] font-extrabold">{children}</Text>; }
 export function Title({ theme, children }: { theme: ThemeSettings; children: React.ReactNode }) { return <Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="my-1 text-2xl font-black">{children}</Text>; }
-export function Body({ theme, children }: { theme: ThemeSettings; children: React.ReactNode }) { return <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[11px] leading-4">{children}</Text>; }
+export function Body({ theme, children, numberOfLines }: { theme: ThemeSettings; children: React.ReactNode; numberOfLines?: number }) { return <Text numberOfLines={numberOfLines} style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[11px] leading-4">{children}</Text>; }
 export function Small({ theme, children }: { theme: ThemeSettings; children: React.ReactNode }) { return <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[9px]">{children}</Text>; }
 export function SectionTitle({ theme, children }: { theme: ThemeSettings; children: React.ReactNode }) { return <Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-sm font-extrabold">{children}</Text>; }
 export function Panel({ theme, children }: { theme: ThemeSettings; children: React.ReactNode }) { return <View className="mb-3 p-4" style={cardStyle(theme)}>{children}</View>; }

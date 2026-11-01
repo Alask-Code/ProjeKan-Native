@@ -285,24 +285,24 @@ export const themePresets: { id: string; name: string; settings: ThemeSettings }
     }
   },
   {
-    id: 'rainbow',
-    name: 'Rainbow',
+    id: 'windows-7',
+    name: 'Windows 7',
     settings: {
       ...defaultTheme,
-      primary: '#FF5CA8',
-      background: '#17111F',
-      surface: '#21182D',
-      raised: '#342342',
-      text: '#FFF4FC',
-      muted: '#D0B7D5',
-      border: '#A35BD0',
-      danger: '#FF5964',
-      success: '#45D6A0',
-      warning: '#FFD166',
-      info: '#54C8F5',
-      borderRadius: 8,
-      borderWidth: 2,
-      font: 'Press Start 2P'
+      primary: '#2878B8',
+      background: '#E8F2FA',
+      surface: '#F8FBFE',
+      raised: '#D5E7F5',
+      text: '#1C2B39',
+      muted: '#536B7D',
+      border: '#9BBBD3',
+      danger: '#C74646',
+      success: '#3B8A58',
+      warning: '#A87500',
+      info: '#2878B8',
+      borderRadius: 6,
+      borderWidth: 1,
+      font: 'system-ui, sans-serif'
     }
   },
   {

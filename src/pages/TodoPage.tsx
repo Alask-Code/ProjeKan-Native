@@ -63,7 +63,7 @@ export function TodoScreen({ theme }: { theme: ThemeSettings }) {
     </View>;
   });
   return <KeyboardAwareScrollView className="flex-1" keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"} contentContainerStyle={{ padding: 18, paddingBottom: keyboardHeight + 28 }}>
-    <View className="mb-5 flex-row items-end justify-between"><View className="flex-1 pr-2"><Eyebrow theme={theme}>FOCO DO DIA</Eyebrow><Title theme={theme}>Tarefas</Title><Body theme={theme}>Organize suas tarefas em listas separadas.</Body></View><View className="items-end"><Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-xl font-black">{completed}/{listTodos.length}</Text><Small theme={theme}>concluídas</Small></View></View>
+    <View className="mb-5 flex-row items-end justify-between"><View className="flex-1 pr-2"><Eyebrow theme={theme}>FOCO DO DIA</Eyebrow><Title theme={theme}>Tarefas</Title><Body numberOfLines={1} theme={theme}>Organize suas tarefas em listas separadas.</Body></View><View className="items-end"><Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-xl font-black">{completed}/{listTodos.length}</Text><Small theme={theme}>concluídas</Small></View></View>
     <Panel theme={theme}>
       <View className="mb-3"><SectionTitle theme={theme}>Suas listas</SectionTitle></View>
       <View className="flex-row items-center gap-2">

@@ -1,6 +1,6 @@
 import "./global.css";
 import React, { useEffect, useState } from "react";
-import { Alert, BackHandler, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
+import { BackHandler, Image, KeyboardAvoidingView, Platform, Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useFonts as useCustomFonts } from "expo-font";
 import { Archivo_400Regular } from "@expo-google-fonts/archivo";
@@ -26,6 +26,7 @@ import { ProjectFormModal } from "./components/project/ProjectFormModal";
 import { OnboardingModal, ProfilePhotoModal } from "./components/profile/ProfileModals";
 import { SettingsModal } from "./components/profile/SettingsModal";
 import { Action, AppIcon } from "./components/ui";
+import { useAppDialog } from "./hooks/useAppDialog";
 import { isDark, fontFamily } from "./utils/theme";
 import { useUserProfile } from "./hooks/useUserProfile";
 import { useOnboarding } from "./hooks/useOnboarding";
@@ -55,6 +56,7 @@ function AppContent() {
   const resetTheme = useThemeStore((state) => state.resetSettings);
   const moveProjectToPosition = useNativeProjects((state) => state.moveProjectToPosition);
   const theme = useThemeStore((state) => state.settings);
+  const { showDialog, dialogModal } = useAppDialog(theme);
   const completeOnboarding = () => { removeTemplateProjects(); finishOnboarding(); };
   useEffect(() => {
     let active = true;
@@ -77,10 +79,10 @@ function AppContent() {
   const currentTitle = route === "/theme-editor" ? "Tema" : navigation.find((item) => item.path === route)?.label ?? "Quadro";
   const requestRoute = (nextRoute: Route) => {
     if (route === "/theme-editor" && themeDraftDirty && nextRoute !== route) {
-      Alert.alert("Descartar alterações?", "Você tem alterações no tema que ainda não foram salvas.", [
+      showDialog({ title: "Descartar alterações?", message: "Você tem alterações no tema que ainda não foram salvas.", actions: [
         { text: "Continuar editando", style: "cancel" },
         { text: "Sair sem salvar", style: "destructive", onPress: () => { setThemeDraftDirty(false); setRoute(nextRoute); } },
-      ]);
+      ] });
       return;
     }
     setRoute(nextRoute);
@@ -88,22 +90,22 @@ function AppContent() {
   useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
       if (route === "/theme-editor" && themeDraftDirty) {
-        Alert.alert("Descartar alterações?", "Você tem alterações no tema que ainda não foram salvas.", [
+        showDialog({ title: "Descartar alterações?", message: "Você tem alterações no tema que ainda não foram salvas.", actions: [
           { text: "Continuar editando", style: "cancel" },
           { text: "Sair sem salvar", style: "destructive", onPress: () => { setThemeDraftDirty(false); setRoute("/"); } },
-        ]);
+        ] });
       } else if (route !== "/") {
         setRoute("/");
       } else {
-        Alert.alert("Sair do ProjeKan?", "Deseja fechar o aplicativo?", [
+        showDialog({ title: "Sair do ProjeKan?", message: "Deseja fechar o aplicativo?", actions: [
           { text: "Cancelar", style: "cancel" },
           { text: "Sair", style: "destructive", onPress: () => BackHandler.exitApp() },
-        ]);
+        ] });
       }
       return true;
     });
     return () => subscription.remove();
-  }, [route, themeDraftDirty]);
+  }, [route, themeDraftDirty, showDialog]);
   const colorsStyle = { backgroundColor: theme.background };
 
   return (
@@ -115,7 +117,7 @@ function AppContent() {
           <View className="flex-row items-center justify-between border-b px-4 py-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderBottomWidth: theme.borderWidth }}>
             <View className="flex-row items-center gap-3">
               <View className="h-9 w-9 items-center justify-center"><Image source={brandMark} resizeMode="contain" className="h-9 w-9" /></View>
-              <View><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-base font-black">ProjeKan Manager</Text><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[10px]">{currentTitle}</Text></View>
+              <View><Text numberOfLines={1} style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-base font-black">ProjeKan Manager</Text><Text numberOfLines={1} style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-[10px]">{currentTitle}</Text></View>
             </View>
             <Pressable accessibilityRole="button" accessibilityLabel="Abrir perfil do usuário" onPress={() => setEditingProfilePhoto(true)} className="h-9 w-9 items-center justify-center overflow-hidden rounded-full" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth }}>{profilePhoto ? <Image source={{ uri: profilePhoto }} resizeMode="cover" className="h-full w-full" /> : <Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="font-bold">{profileName.trim().slice(0, 1).toUpperCase() || "M"}</Text>}</Pressable>
           </View>
@@ -140,19 +142,20 @@ function AppContent() {
         <ProjectFormModal visible={creating} project={null} theme={theme} onClose={() => setCreating(false)} onSave={(draft) => { saveProject(draft); setCreating(false); }} />
         <ProjectDetailsModal project={selectedProject} projects={projects} theme={theme} onClose={() => setEditingId(null)} onEdit={() => { if (!selectedProject) return; const project = selectedProject; setEditingId(null); setTimeout(() => setEditingId(-project.id), 0); }} onDelete={(id) => { deleteProject(id); setEditingId(null); }} onUpdate={updateProject} />
         <ProjectFormModal visible={editingId !== null && editingId < 0} project={editingId ? projects.find((project) => project.id === Math.abs(editingId)) ?? null : null} theme={theme} onClose={() => setEditingId(null)} onSave={(draft) => { if (editingId) updateProject(Math.abs(editingId), draft); setEditingId(null); }} />
-        <ProfilePhotoModal visible={editingProfilePhoto} value={profilePhoto ?? ""} name={profileName} theme={theme} onClose={() => setEditingProfilePhoto(false)} onShowTutorial={() => { setEditingProfilePhoto(false); openOnboarding(); }} onOpenTheme={() => { setEditingProfilePhoto(false); setRoute("/theme-editor"); }} onOpenSettings={() => { setEditingProfilePhoto(false); setShowSettings(true); }} onDeleteAll={() => Alert.alert("Apagar todo o conteúdo salvo?", "Isso remove projetos, listas e tarefas, restaura o tema padrão e apaga os dados do perfil. Essa ação não pode ser desfeita.", [{ text: "Cancelar", style: "cancel" }, { text: "Apagar tudo", style: "destructive", onPress: deleteAllSavedData }])} onExportCsv={() => createBackupCsv({ projects, lists, todos })} onImportCsv={(csv) => {
+        <ProfilePhotoModal visible={editingProfilePhoto} value={profilePhoto ?? ""} name={profileName} theme={theme} onClose={() => setEditingProfilePhoto(false)} onShowTutorial={() => { setEditingProfilePhoto(false); openOnboarding(); }} onOpenTheme={() => { setEditingProfilePhoto(false); setRoute("/theme-editor"); }} onOpenSettings={() => { setEditingProfilePhoto(false); setShowSettings(true); }} onShowDialog={showDialog} onExportCsv={() => createBackupCsv({ projects, lists, todos })} onImportCsv={(csv) => {
           try {
             const backup = parseBackupCsv(csv);
-            Alert.alert("Substituir dados atuais?", `O CSV contém ${backup.projects.length} projetos, ${backup.lists.length} listas e ${backup.todos.length} tarefas. Os dados atuais dessas áreas serão substituídos.`, [
+            showDialog({ title: "Substituir dados atuais?", message: `O CSV contém ${backup.projects.length} projetos, ${backup.lists.length} listas e ${backup.todos.length} tarefas. Os dados atuais dessas áreas serão substituídos.`, actions: [
               { text: "Cancelar", style: "cancel" },
-              { text: "Importar", onPress: () => { importProjects(backup.projects); importTodos(backup.lists, backup.todos); Alert.alert("Importação concluída", "Projetos e tarefas foram restaurados do CSV."); } },
-            ]);
+              { text: "Importar", onPress: () => { importProjects(backup.projects); importTodos(backup.lists, backup.todos); showDialog({ title: "Importação concluída", message: "Projetos e tarefas foram restaurados do CSV.", actions: [{ text: "Entendi" }] }); } },
+            ] });
           } catch (error) {
-            Alert.alert("CSV inválido", error instanceof Error ? error.message : "Confira o arquivo e tente novamente.");
+            showDialog({ title: "CSV inválido", message: error instanceof Error ? error.message : "Confira o arquivo e tente novamente.", actions: [{ text: "Entendi" }] });
           }
         }} onSave={(photo, name) => { const nextName = name.trim() || "Meu perfil"; saveProfile(photo, nextName); setEditingProfilePhoto(false); }} />
-        <SettingsModal visible={showSettings} theme={theme} onClose={() => { setShowSettings(false); setEditingProfilePhoto(true); }} />
+        <SettingsModal visible={showSettings} theme={theme} onClose={() => { setShowSettings(false); setEditingProfilePhoto(true); }} onDeleteAll={() => showDialog({ title: "Apagar todo o conteúdo salvo?", message: "Isso remove projetos, listas e tarefas, restaura o tema padrão e apaga os dados do perfil. Essa ação não pode ser desfeita.", actions: [{ text: "Cancelar", style: "cancel" }, { text: "Apagar tudo", style: "destructive", onPress: deleteAllSavedData }] })} onShowDialog={showDialog} />
         <OnboardingModal visible={showOnboarding} step={onboardingStep} name={profileName} theme={theme} onStep={setOnboardingStep} onNameSave={saveProfileName} onDismiss={finishOnboarding} onComplete={completeOnboarding} />
+        {dialogModal}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -163,4 +166,3 @@ export default function App() {
   if (!fontsLoaded && !fontError) return null;
   return <GestureHandlerRootView style={{ flex: 1 }}><SafeAreaProvider><AppContent /></SafeAreaProvider></GestureHandlerRootView>;
 }
-

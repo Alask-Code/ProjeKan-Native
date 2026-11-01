@@ -31,8 +31,8 @@ export default function Stepper({ theme, label, value, min, max, onChange, suffi
   return <View className="mt-4 p-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
     <View className="mb-2 flex-row items-center justify-between"><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">{label}</Text><Text accessibilityLabel={`${value}${suffix}`} style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-xs font-black">{value}{suffix}</Text></View>
     <View accessibilityRole="adjustable" accessibilityLabel={label} accessibilityValue={{ min, max, now: value }} onLayout={(event) => setTrackWidth(event.nativeEvent.layout.width)} {...responder.panHandlers} className="h-9 justify-center">
-      <View pointerEvents="none" className="h-2 overflow-hidden" style={{ backgroundColor: theme.raised, borderRadius: 99 }}><View style={{ width: `${percent * 100}%`, height: "100%", backgroundColor: theme.primary }} /></View>
-      <View pointerEvents="none" style={{ position: "absolute", left: Math.max(0, Math.min(trackWidth - 20, percent * trackWidth - 10)), width: 20, height: 20, borderRadius: 10, backgroundColor: theme.primary, borderColor: theme.background, borderWidth: 2, elevation: 2 }} />
+      <View pointerEvents="none" className="h-2 overflow-hidden" style={{ backgroundColor: theme.raised, borderRadius: theme.borderRadius }}><View style={{ width: `${percent * 100}%`, height: "100%", backgroundColor: theme.primary, borderRadius: theme.borderRadius }} /></View>
+      <View pointerEvents="none" style={{ position: "absolute", left: Math.max(0, Math.min(trackWidth - 20, percent * trackWidth - 10)), width: 20, height: 20, borderRadius: theme.borderRadius, backgroundColor: theme.primary, borderColor: theme.background, borderWidth: 2, elevation: 2 }} />
     </View>
     <View className="flex-row justify-between"><Small theme={theme}>{min}{suffix}</Small><Small theme={theme}>{max}{suffix}</Small></View>
   </View>;
