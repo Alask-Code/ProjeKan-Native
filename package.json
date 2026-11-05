@@ -11,7 +11,7 @@
     "android": "node scripts/sync-changelog.cjs && expo run:android",
     "ios": "node scripts/sync-changelog.cjs && expo run:ios",
     "build:apk": "node scripts/sync-changelog.cjs && npx eas-cli build --platform android --profile preview",
-    "build:apk:local": "node scripts/sync-changelog.cjs && npx eas-cli build --platform android --profile preview --local",
+    "build:apk:local": "node scripts/sync-changelog.cjs && cd android && gradlew.bat assembleRelease && cd ..",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -969,133 +969,44 @@ export function ReleaseList({
           Abrir releases
         </Action>
       </View>
-      <Modal animationType="slide" transparent visible={visible} onRequestClose={close}>
-        <KeyboardAvoidingView
-          className="flex-1 justify-end bg-black/60"
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+
+      <ProjectModalWrapper theme={theme} visible={visible} onClose={close}>
+        <View
+          className="max-h-[86%] border-t p-4"
+          style={{
+            height: '86%',
+            backgroundColor: theme.background,
+            borderColor: theme.border,
+            borderTopWidth: theme.borderWidth,
+            borderTopLeftRadius: theme.borderRadius,
+            borderTopRightRadius: theme.borderRadius,
+            overflow: 'hidden'
+          }}
         >
-          <View
-            className="max-h-[86%] border-t p-4"
-            style={{
-              height: '86%',
-              backgroundColor: theme.background,
-              borderColor: theme.border,
-              borderTopWidth: theme.borderWidth,
-              borderTopLeftRadius: theme.borderRadius,
-              borderTopRightRadius: theme.borderRadius,
-              overflow: 'hidden'
-            }}
-          >
-            <View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} />
-            <View className="mb-3 flex-row items-center justify-between">
-              <View>
-                <Eyebrow theme={theme}>PROPRIEDADE DO PROJETO</Eyebrow>
-                <Text
-                  style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
-                  className="mt-1 text-lg font-black"
-                >
-                  {property.name}
-                </Text>
-              </View>
-              <CloseButton theme={theme} onPress={close} />
+          <View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} />
+          <View className="mb-3 flex-row items-center justify-between">
+            <View>
+              <Eyebrow theme={theme}>PROPRIEDADE DO PROJETO</Eyebrow>
+              <Text
+                style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                className="mt-1 text-lg font-black"
+              >
+                {property.name}
+              </Text>
             </View>
-            <ScrollView
-              style={{ flex: 1 }}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
-              contentContainerStyle={{ paddingBottom: 12 }}
-            >
-              {releases.length ? (
-                releases.map((release) => (
-                  <View
-                    key={release.id}
-                    className="mb-2 p-3"
-                    style={{
-                      backgroundColor: theme.surface,
-                      borderColor: theme.border,
-                      borderWidth: theme.borderWidth,
-                      borderRadius: theme.borderRadius
-                    }}
-                  >
-                    <View className="flex-row items-center gap-2">
-                      <View className="flex-1">
-                        <Text
-                          numberOfLines={1}
-                          style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
-                          className="text-sm font-bold"
-                        >
-                          {release.version}
-                        </Text>
-                        <Text
-                          style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
-                          className="mt-0.5 text-[10px]"
-                        >
-                          {formatDateValue(release.date)}
-                        </Text>
-                      </View>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={`Remover release ${release.version}`}
-                        hitSlop={6}
-                        onPress={() => onChange(releases.filter((item) => item.id !== release.id))}
-                        className="h-8 w-8 items-center justify-center"
-                      >
-                        <AppIcon name="trash" size={16} color={theme.muted} />
-                      </Pressable>
-                    </View>
-                    {release.url?.trim() || release.changelogUrl?.trim() ? (
-                      <View className="mt-2 flex-row flex-wrap gap-3">
-                        {release.url?.trim() ? (
-                          <Pressable
-                            accessibilityRole="link"
-                            onPress={() => openExternalUrl(release.url)}
-                            className="flex-row items-center gap-1"
-                          >
-                            <AppIcon name="arrowUpRight" size={13} color={theme.primary} />
-                            <Text
-                              style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
-                              className="text-[10px] font-semibold"
-                            >
-                              Abrir release
-                            </Text>
-                          </Pressable>
-                        ) : null}
-                        {release.changelogUrl?.trim() ? (
-                          <Pressable
-                            accessibilityRole="link"
-                            onPress={() => openExternalUrl(release.changelogUrl)}
-                            className="flex-row items-center gap-1"
-                          >
-                            <AppIcon name="arrowUpRight" size={13} color={theme.primary} />
-                            <Text
-                              style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
-                              className="text-[10px] font-semibold"
-                            >
-                              Abrir changelog
-                            </Text>
-                          </Pressable>
-                        ) : null}
-                      </View>
-                    ) : (
-                      <Text
-                        style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
-                        className="mt-2 text-[10px]"
-                      >
-                        Sem links cadastrados
-                      </Text>
-                    )}
-                  </View>
-                ))
-              ) : (
-                <View className="items-center py-8">
-                  <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-xs">
-                    Ainda não há versões cadastradas.
-                  </Text>
-                </View>
-              )}
-              {adding ? (
+            <CloseButton theme={theme} onPress={close} />
+          </View>
+          <ScrollView
+            style={{ flex: 1 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+            contentContainerStyle={{ paddingBottom: 12 }}
+          >
+            {releases.length ? (
+              releases.map((release) => (
                 <View
-                  className="mt-1 gap-2 p-3"
+                  key={release.id}
+                  className="mb-2 p-3"
                   style={{
                     backgroundColor: theme.surface,
                     borderColor: theme.border,
@@ -1103,86 +1014,171 @@ export function ReleaseList({
                     borderRadius: theme.borderRadius
                   }}
                 >
-                  <Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">
-                    Nova release
-                  </Text>
-                  <View className="flex-row gap-2">
-                    <TextInput
-                      accessibilityLabel="Versão da release"
-                      value={version}
-                      onChangeText={(value) => {
-                        setVersion(value);
-                        setError('');
-                      }}
-                      placeholder="Versão"
-                      placeholderTextColor={theme.muted}
-                      style={[input, { flex: 1 }]}
-                    />
-                    <DatePickerField
-                      accessibilityLabel="Data da release"
-                      value={date}
-                      onChange={(value) => {
-                        setDate(value);
-                        setError('');
-                      }}
-                      placeholder="Data"
-                      theme={theme}
-                      style={{ flex: 1 }}
-                    />
-                  </View>
-                  <TextInput
-                    accessibilityLabel="Link da release (opcional)"
-                    value={url}
-                    onChangeText={setUrl}
-                    placeholder="Link da release (opcional)"
-                    placeholderTextColor={theme.muted}
-                    autoCapitalize="none"
-                    style={input}
-                  />
-                  <TextInput
-                    accessibilityLabel="Link do changelog (opcional)"
-                    value={changelogUrl}
-                    onChangeText={setChangelogUrl}
-                    placeholder="Link do changelog (opcional)"
-                    placeholderTextColor={theme.muted}
-                    autoCapitalize="none"
-                    style={input}
-                  />
-                  {error ? (
-                    <Text style={{ color: theme.danger, fontFamily: fontFamily(theme.font) }} className="text-[10px]">
-                      {error}
-                    </Text>
-                  ) : null}
-                  <View className="flex-row justify-end">
-                    <Action
-                      theme={theme}
-                      secondary
-                      onPress={() => {
-                        setAdding(false);
-                        setError('');
-                      }}
+                  <View className="flex-row items-center gap-2">
+                    <View className="flex-1">
+                      <Text
+                        numberOfLines={1}
+                        style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                        className="text-sm font-bold"
+                      >
+                        {release.version}
+                      </Text>
+                      <Text
+                        style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+                        className="mt-0.5 text-[10px]"
+                      >
+                        {formatDateValue(release.date)}
+                      </Text>
+                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Remover release ${release.version}`}
+                      hitSlop={6}
+                      onPress={() => onChange(releases.filter((item) => item.id !== release.id))}
+                      className="h-8 w-8 items-center justify-center"
                     >
-                      Cancelar
-                    </Action>
+                      <AppIcon name="trash" size={16} color={theme.muted} />
+                    </Pressable>
                   </View>
+                  {release.url?.trim() || release.changelogUrl?.trim() ? (
+                    <View className="mt-2 flex-row flex-wrap gap-3">
+                      {release.url?.trim() ? (
+                        <Pressable
+                          accessibilityRole="link"
+                          onPress={() => openExternalUrl(release.url)}
+                          className="flex-row items-center gap-1"
+                        >
+                          <AppIcon name="arrowUpRight" size={13} color={theme.primary} />
+                          <Text
+                            style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
+                            className="text-[10px] font-semibold"
+                          >
+                            Abrir release
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                      {release.changelogUrl?.trim() ? (
+                        <Pressable
+                          accessibilityRole="link"
+                          onPress={() => openExternalUrl(release.changelogUrl)}
+                          className="flex-row items-center gap-1"
+                        >
+                          <AppIcon name="arrowUpRight" size={13} color={theme.primary} />
+                          <Text
+                            style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
+                            className="text-[10px] font-semibold"
+                          >
+                            Abrir changelog
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  ) : (
+                    <Text
+                      style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+                      className="mt-2 text-[10px]"
+                    >
+                      Sem links cadastrados
+                    </Text>
+                  )}
                 </View>
-              ) : null}
-            </ScrollView>
-            <View className="mt-2 flex-row justify-end">
-              <Action
-                theme={theme}
-                icon="plus"
-                onPress={() => {
-                  if (adding) addRelease();
-                  else setAdding(true);
+              ))
+            ) : (
+              <View className="items-center py-8">
+                <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-xs">
+                  Ainda não há versões cadastradas.
+                </Text>
+              </View>
+            )}
+            {adding ? (
+              <View
+                className="mt-1 gap-2 p-3"
+                style={{
+                  backgroundColor: theme.surface,
+                  borderColor: theme.border,
+                  borderWidth: theme.borderWidth,
+                  borderRadius: theme.borderRadius
                 }}
               >
-                Adicionar release
-              </Action>
-            </View>
+                <Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">
+                  Nova release
+                </Text>
+                <View className="flex-row gap-2">
+                  <TextInput
+                    accessibilityLabel="Versão da release"
+                    value={version}
+                    onChangeText={(value) => {
+                      setVersion(value);
+                      setError('');
+                    }}
+                    placeholder="Versão"
+                    placeholderTextColor={theme.muted}
+                    style={[input, { flex: 1 }]}
+                  />
+                  <DatePickerField
+                    accessibilityLabel="Data da release"
+                    value={date}
+                    onChange={(value) => {
+                      setDate(value);
+                      setError('');
+                    }}
+                    placeholder="Data"
+                    theme={theme}
+                    style={{ flex: 1 }}
+                  />
+                </View>
+                <TextInput
+                  accessibilityLabel="Link da release (opcional)"
+                  value={url}
+                  onChangeText={setUrl}
+                  placeholder="Link da release (opcional)"
+                  placeholderTextColor={theme.muted}
+                  autoCapitalize="none"
+                  style={input}
+                />
+                <TextInput
+                  accessibilityLabel="Link do changelog (opcional)"
+                  value={changelogUrl}
+                  onChangeText={setChangelogUrl}
+                  placeholder="Link do changelog (opcional)"
+                  placeholderTextColor={theme.muted}
+                  autoCapitalize="none"
+                  style={input}
+                />
+                {error ? (
+                  <Text style={{ color: theme.danger, fontFamily: fontFamily(theme.font) }} className="text-[10px]">
+                    {error}
+                  </Text>
+                ) : null}
+                <View className="flex-row justify-end">
+                  <Action
+                    theme={theme}
+                    secondary
+                    onPress={() => {
+                      setAdding(false);
+                      setError('');
+                    }}
+                  >
+                    Cancelar
+                  </Action>
+                </View>
+              </View>
+            ) : null}
+          </ScrollView>
+          <View className="mt-2 flex-row justify-end">
+            <Action
+              theme={theme}
+              icon="plus"
+              onPress={() => {
+                if (adding) addRelease();
+                else setAdding(true);
+              }}
+            >
+              Adicionar release
+            </Action>
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        </View>
+      </ProjectModalWrapper>
     </>
   );
 }
