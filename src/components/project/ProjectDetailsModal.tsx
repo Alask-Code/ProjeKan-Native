@@ -1,125 +1,1188 @@
-import React, { useEffect, useState } from "react";
-import { Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { Project, ProjectProperty, ProjectPropertyType, ProjectStatus, Release } from "../../stores/nativeProjectStore";
-import { ThemeSettings } from "../../stores/themeStore";
-import { columns, propertyTypes } from "../../constants/app";
-import { Action, AppIcon, Body, ChoiceRow, CloseButton, Eyebrow, Field, LinkText, Panel, SectionTitle } from "../../components/ui";
-import { cardStyle, fontFamily, imageSource, inputDynamic, openExternalUrl } from "../../utils/theme";
-import { DatePickerField, formatDateValue } from "../DatePickerField";
-import useTodoStore from "../../stores/todoStore";
+import React, { useEffect, useState } from 'react';
+import {
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View
+} from 'react-native';
+import { Project, ProjectProperty, ProjectPropertyType, ProjectStatus, Release } from '../../stores/nativeProjectStore';
+import { ThemeSettings } from '../../stores/themeStore';
+import { columns, propertyTypes } from '../../constants/app';
+import {
+  Action,
+  AppIcon,
+  Body,
+  ChoiceRow,
+  CloseButton,
+  Eyebrow,
+  Field,
+  LinkText,
+  Panel,
+  SectionTitle
+} from '../../components/ui';
+import { cardStyle, fontFamily, imageSource, inputDynamic, openExternalUrl } from '../../utils/theme';
+import { DatePickerField, formatDateValue } from '../DatePickerField';
+import useTodoStore from '../../stores/todoStore';
+import { ProjectModalWrapper } from './ProjectModalWrapper';
+
 export function ProjectHero({ project, theme }: { project: Project; theme: ThemeSettings }) {
   const hasCover = Boolean(project.backgroundImage);
   const status = columns.find((item) => item.key === project.status) ?? columns[0];
-  const foreground = hasCover ? "#ffffff" : theme.text;
-  const priorityColor = project.priority === "Alta" ? theme.danger : project.priority === "Baixa" ? theme.success : theme.warning;
-  return <View className="mb-4 h-56 overflow-hidden" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
-    {hasCover ? <Image accessibilityLabel={`Imagem de capa de ${project.name}`} source={imageSource(project.backgroundImage!)} resizeMode="cover" className="absolute h-full w-full" /> : null}
-    <View className="flex-1 justify-between p-4" style={{ backgroundColor: hasCover ? "rgba(8, 14, 18, 0.48)" : theme.raised }}>
-      <View className="flex-row items-start justify-between"><View className="h-12 w-12 items-center justify-center overflow-hidden" style={{ backgroundColor: hasCover ? "rgba(255,255,255,0.18)" : theme.surface, borderColor: hasCover ? "rgba(255,255,255,0.45)" : theme.border, borderWidth: 1, borderRadius: theme.borderRadius }}>{project.logo ? <Image source={imageSource(project.logo)} resizeMode="cover" className="h-full w-full" /> : <Text style={{ color: hasCover ? "#ffffff" : theme.primary }} className="text-lg font-black">{project.name.trim().slice(0, 1).toUpperCase()}</Text>}</View><View className="px-2.5 py-1.5" style={{ backgroundColor: hasCover ? "rgba(0,0,0,0.48)" : theme.surface, borderRadius: theme.borderRadius }}><Text style={{ color: foreground, fontFamily: fontFamily(theme.font) }} className="text-[9px] font-bold">{status.label.toUpperCase()}</Text></View></View>
-      <View><Text numberOfLines={2} style={{ color: foreground, fontFamily: fontFamily(theme.font), textShadowColor: hasCover ? "rgba(0,0,0,0.5)" : "transparent", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 }} className="text-2xl font-black">{project.name}</Text><Text numberOfLines={2} style={{ color: hasCover ? "rgba(255,255,255,0.9)" : theme.muted, fontFamily: fontFamily(theme.font) }} className="mt-1 text-xs leading-4">{project.description || "Este projeto ainda não tem uma descrição."}</Text><View className="mt-3 self-start px-2.5 py-1" style={{ backgroundColor: hasCover ? "rgba(0,0,0,0.48)" : theme.surface, borderRadius: theme.borderRadius }}><Text style={{ color: hasCover ? "#ffffff" : priorityColor }} className="text-[9px] font-bold">Prioridade {project.priority.toLowerCase()}</Text></View></View>
+  const foreground = hasCover ? '#ffffff' : theme.text;
+  const priorityColor =
+    project.priority === 'Alta' ? theme.danger : project.priority === 'Baixa' ? theme.success : theme.warning;
+  return (
+    <View
+      className="mb-4 h-56 overflow-hidden"
+      style={{
+        backgroundColor: theme.raised,
+        borderColor: theme.border,
+        borderWidth: theme.borderWidth,
+        borderRadius: theme.borderRadius
+      }}
+    >
+      {hasCover ? (
+        <Image
+          accessibilityLabel={`Imagem de capa de ${project.name}`}
+          source={imageSource(project.backgroundImage!)}
+          resizeMode="cover"
+          className="absolute h-full w-full"
+        />
+      ) : null}
+      <View
+        className="flex-1 justify-between p-4"
+        style={{ backgroundColor: hasCover ? 'rgba(8, 14, 18, 0.48)' : theme.raised }}
+      >
+        <View className="flex-row items-start justify-between">
+          <View
+            className="h-12 w-12 items-center justify-center overflow-hidden"
+            style={{
+              backgroundColor: hasCover ? 'rgba(255,255,255,0.18)' : theme.surface,
+              borderColor: hasCover ? 'rgba(255,255,255,0.45)' : theme.border,
+              borderWidth: 1,
+              borderRadius: theme.borderRadius
+            }}
+          >
+            {project.logo ? (
+              <Image source={imageSource(project.logo)} resizeMode="cover" className="h-full w-full" />
+            ) : (
+              <Text style={{ color: hasCover ? '#ffffff' : theme.primary }} className="text-lg font-black">
+                {project.name.trim().slice(0, 1).toUpperCase()}
+              </Text>
+            )}
+          </View>
+          <View
+            className="px-2.5 py-1.5"
+            style={{ backgroundColor: hasCover ? 'rgba(0,0,0,0.48)' : theme.surface, borderRadius: theme.borderRadius }}
+          >
+            <Text style={{ color: foreground, fontFamily: fontFamily(theme.font) }} className="text-[9px] font-bold">
+              {status.label.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+        <View>
+          <Text
+            numberOfLines={2}
+            style={{
+              color: foreground,
+              fontFamily: fontFamily(theme.font),
+              textShadowColor: hasCover ? 'rgba(0,0,0,0.5)' : 'transparent',
+              textShadowOffset: { width: 0, height: 1 },
+              textShadowRadius: 4
+            }}
+            className="text-2xl font-black"
+          >
+            {project.name}
+          </Text>
+          <Text
+            numberOfLines={2}
+            style={{ color: hasCover ? 'rgba(255,255,255,0.9)' : theme.muted, fontFamily: fontFamily(theme.font) }}
+            className="mt-1 text-xs leading-4"
+          >
+            {project.description || 'Este projeto ainda não tem uma descrição.'}
+          </Text>
+          <View
+            className="mt-3 self-start px-2.5 py-1"
+            style={{ backgroundColor: hasCover ? 'rgba(0,0,0,0.48)' : theme.surface, borderRadius: theme.borderRadius }}
+          >
+            <Text style={{ color: hasCover ? '#ffffff' : priorityColor }} className="text-[9px] font-bold">
+              Prioridade {project.priority.toLowerCase()}
+            </Text>
+          </View>
+        </View>
+      </View>
     </View>
-  </View>;
+  );
 }
 
-export function ProjectDetailsModal({ project, projects, theme, onClose, onEdit, onDelete, onUpdate }: { project: Project | null; projects: Project[]; theme: ThemeSettings; onClose: () => void; onEdit: () => void; onDelete: (id: number) => void; onUpdate: (id: number, updates: Partial<Project>) => void }) {
+export function ProjectDetailsModal({
+  project,
+  projects,
+  theme,
+  onClose,
+  onEdit,
+  onDelete,
+  onUpdate
+}: {
+  project: Project | null;
+  projects: Project[];
+  theme: ThemeSettings;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: (id: number) => void;
+  onUpdate: (id: number, updates: Partial<Project>) => void;
+}) {
   const [adding, setAdding] = useState(false);
-  const [propertyName, setPropertyName] = useState("");
-  const [propertyType, setPropertyType] = useState<ProjectPropertyType>("text");
+  const [propertyName, setPropertyName] = useState('');
+  const [propertyType, setPropertyType] = useState<ProjectPropertyType>('text');
   const [showPropertyTypeMenu, setShowPropertyTypeMenu] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [showTaskListMenu, setShowTaskListMenu] = useState(false);
   const taskLists = useTodoStore((state) => state.lists);
   const todos = useTodoStore((state) => state.todos);
-  React.useEffect(() => { setAdding(false); setConfirmDelete(false); setPropertyName(""); setShowPropertyTypeMenu(false); setShowTaskListMenu(false); }, [project?.id]);
-  const current = project ? projects.find((item) => item.id === project.id) ?? project : null;
+  React.useEffect(() => {
+    setAdding(false);
+    setConfirmDelete(false);
+    setPropertyName('');
+    setShowPropertyTypeMenu(false);
+    setShowTaskListMenu(false);
+  }, [project?.id]);
+  const current = project ? (projects.find((item) => item.id === project.id) ?? project) : null;
   const field = inputDynamic(theme);
-  const updateProperties = (items: ProjectProperty[]) => { if (current) onUpdate(current.id, { properties: items }); };
-  return <Modal animationType="slide" transparent visible={Boolean(current)} onRequestClose={onClose}><KeyboardAvoidingView className="flex-1 justify-end bg-black/60" behavior={Platform.OS === "ios" ? "padding" : "height"}><View className="h-[94%] border-t p-5" style={{ backgroundColor: theme.background, borderColor: theme.border, borderTopWidth: theme.borderWidth, borderTopLeftRadius: theme.borderRadius, borderTopRightRadius: theme.borderRadius, overflow: "hidden" }}><View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} /><View className="mb-4 flex-row items-center justify-between"><View className="flex-1 pr-3"><Eyebrow theme={theme}>DETALHES DO PROJETO</Eyebrow><Text numberOfLines={1} style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mt-1 text-xl font-black">{current?.name}</Text></View><View className="flex-row gap-2"><Action theme={theme} secondary onPress={onEdit}>Editar</Action><CloseButton theme={theme} onPress={onClose} /></View></View>{current ? <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"} contentContainerStyle={{ paddingBottom: 18 }}><ProjectHero project={current} theme={theme} /><Panel theme={theme}><View className="mb-2"><SectionTitle theme={theme}>Resumo do projeto</SectionTitle></View>{[{ label: "Responsável", value: current.owner || "Não definido", color: current.owner ? theme.text : theme.muted }, { label: "Prazo", value: current.dueDate ? new Date(`${current.dueDate}T00:00:00`).toLocaleDateString("pt-BR") : "Sem prazo", color: current.dueDate ? theme.text : theme.muted }, { label: "Criado em", value: new Date(current.createdAt).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" }), color: theme.text }].map((item) => <View key={item.label} className="flex-row items-center justify-between border-b py-2" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="w-28 text-xs font-semibold">{item.label}</Text><Text numberOfLines={1} style={{ color: item.color, fontFamily: fontFamily(theme.font) }} className="ml-3 flex-1 text-right text-sm font-bold">{item.value}</Text></View>)}{current.repositoryUrl?.trim() ? <Pressable accessibilityRole="link" accessibilityLabel="Abrir repositório no GitHub" onPress={() => openExternalUrl(current.repositoryUrl)} className="mt-3 flex-row items-center gap-3 p-3" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><AppIcon name="github" size={20} color={theme.text} /><View className="flex-1"><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">Repositório no GitHub</Text><Text numberOfLines={1} style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="mt-0.5 text-[10px]">{current.repositoryUrl.trim().replace("https://", "").replace("http://", "")}</Text></View><AppIcon name="arrowUpRight" size={16} color={theme.primary} /></Pressable> : null}{current.softwareDocumentDesignUrl?.trim() ? <Pressable accessibilityRole="link" accessibilityLabel="Abrir Software Document Design (PDF)" onPress={() => openExternalUrl(current.softwareDocumentDesignUrl)} className="mt-2 flex-row items-center gap-3 p-3" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><AppIcon name="drive" size={20} color={theme.text} /><View className="flex-1"><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">Software Document Design</Text><Text numberOfLines={1} style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="mt-0.5 text-[10px]">{current.softwareDocumentDesignUrl.trim().replace("https://", "").replace("http://", "")}</Text></View><AppIcon name="arrowUpRight" size={16} color={theme.primary} /></Pressable> : null}</Panel>
-    <Panel theme={theme}><View className="mb-2"><SectionTitle theme={theme}>Lista de tarefas</SectionTitle><Body theme={theme}>Vincule uma lista para acompanhar suas tarefas neste projeto.</Body></View><View style={{ zIndex: showTaskListMenu ? 30 : 0, elevation: showTaskListMenu ? 30 : 0 }}><Pressable accessibilityRole="button" accessibilityState={{ expanded: showTaskListMenu }} onPress={() => setShowTaskListMenu((open) => !open)} className="h-10 flex-row items-center justify-between px-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text numberOfLines={1} style={{ color: current.taskListId && taskLists.some((list) => list.id === current.taskListId) ? theme.text : theme.muted, fontFamily: fontFamily(theme.font) }} className="flex-1 text-xs font-semibold">{taskLists.find((list) => list.id === current.taskListId)?.name ?? "Selecionar lista"}</Text><AppIcon name={showTaskListMenu ? "chevronUp" : "chevronDown"} size={17} color={theme.primary} /></Pressable>{showTaskListMenu ? <View className="mt-1 overflow-hidden" style={{ maxHeight: 220, backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">{[{ id: "", name: "Sem lista vinculada" }, ...taskLists].map((list) => <Pressable key={list.id || "none"} accessibilityRole="button" onPress={() => { onUpdate(current.id, { taskListId: list.id || undefined }); setShowTaskListMenu(false); }} className="flex-row items-center justify-between px-3 py-2.5" style={{ backgroundColor: current.taskListId === list.id ? theme.raised : theme.surface, borderBottomColor: theme.border, borderBottomWidth: theme.borderWidth }}><Text numberOfLines={1} style={{ color: current.taskListId === list.id ? theme.primary : theme.text, fontFamily: fontFamily(theme.font) }} className="flex-1 text-xs font-semibold">{list.name}</Text>{current.taskListId === list.id ? <AppIcon name="check" size={15} color={theme.primary} /> : null}</Pressable>)}</ScrollView></View> : null}</View>{(() => { const linked = taskLists.find((list) => list.id === current.taskListId); if (!linked) return null; const linkedTodos = todos.filter((todo) => todo.listId === linked.id); const done = linkedTodos.filter((todo) => todo.done).length; return <View className="mt-3" style={{ borderColor: theme.border, borderTopWidth: theme.borderWidth }}>{linkedTodos.length ? linkedTodos.map((todo) => <View key={todo.id} className="flex-row items-center gap-2 border-b py-2" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}><View className="h-4 w-4 items-center justify-center" style={{ backgroundColor: todo.done ? theme.primary : "transparent", borderColor: todo.done ? theme.primary : theme.border, borderWidth: Math.max(1, theme.borderWidth), borderRadius: Math.min(theme.borderRadius, 4) }}>{todo.done ? <AppIcon name="check" size={12} color={theme.background} strokeWidth={3} /> : null}</View><Text numberOfLines={1} style={{ color: theme.text, fontFamily: fontFamily(theme.font), opacity: todo.done ? 0.7 : 1, textDecorationLine: todo.done ? "line-through" : "none" }} className="flex-1 text-xs">{todo.text}</Text></View>) : <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="py-2 text-xs">Esta lista ainda não tem tarefas.</Text>}<Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="mt-2 text-[10px]">{done} de {linkedTodos.length} concluídas</Text></View>; })()}</Panel>
-    <Panel theme={theme}><View className="mb-3 flex-row flex-wrap items-center justify-between gap-2"><View className="flex-1 pr-2" style={{ minWidth: 0 }}><SectionTitle theme={theme}>Propriedades</SectionTitle><Body theme={theme}>Campos e valores salvos neste projeto.</Body></View><View className="shrink-0"><Action theme={theme} secondary onPress={() => { setAdding(!adding); setShowPropertyTypeMenu(false); }} icon={adding ? "close" : "plus"}>{adding ? "Fechar" : "Adicionar"}</Action></View></View>
-      {(current.properties ?? []).map((item) => <ProjectPropertyCard key={item.id} property={item} theme={theme} onSave={(value) => updateProperties((current.properties ?? []).map((entry) => entry.id === item.id ? { ...entry, value } : entry))} onCommit={(name, value, saveValue) => updateProperties((current.properties ?? []).map((entry) => entry.id === item.id ? { ...entry, name, ...(saveValue ? { value } : {}) } : entry))} onDelete={() => updateProperties((current.properties ?? []).filter((entry) => entry.id !== item.id))} />)}
-      {adding ? <View className="mt-3 p-3" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius, zIndex: showPropertyTypeMenu ? 20 : 0, elevation: showPropertyTypeMenu ? 20 : 0 }}><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mb-3 text-sm font-bold">Nova propriedade</Text><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mb-1.5 text-xs font-semibold">Nome do campo</Text><TextInput value={propertyName} onChangeText={setPropertyName} placeholder="Ex.: Link do protótipo" placeholderTextColor={theme.muted} style={field} /><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mb-1.5 mt-3 text-xs font-semibold">Tipo do campo</Text><View style={{ position: "relative", zIndex: 21, elevation: 21 }}><Pressable accessibilityRole="button" accessibilityLabel="Selecionar tipo de propriedade" accessibilityState={{ expanded: showPropertyTypeMenu }} onPress={() => setShowPropertyTypeMenu((open) => !open)} className="h-11 flex-row items-center justify-between px-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">{propertyTypes.find((item) => item.key === propertyType)?.label ?? "Texto"}</Text><AppIcon name={showPropertyTypeMenu ? "chevronUp" : "chevronDown"} size={18} color={theme.primary} /></Pressable>{showPropertyTypeMenu ? <View className="mt-1 overflow-hidden" style={{ maxHeight: 220, backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">{propertyTypes.map((item) => <Pressable key={item.key} accessibilityRole="button" accessibilityState={{ selected: propertyType === item.key }} onPress={() => { setPropertyType(item.key); setShowPropertyTypeMenu(false); }} className="flex-row items-center justify-between px-3 py-2.5" style={{ backgroundColor: propertyType === item.key ? theme.raised : theme.surface, borderBottomColor: theme.border, borderBottomWidth: theme.borderWidth }}><Text style={{ color: propertyType === item.key ? theme.primary : theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-semibold">{item.label}</Text>{propertyType === item.key ? <AppIcon name="check" size={16} color={theme.primary} /> : null}</Pressable>)}</ScrollView></View> : null}</View><View className="mt-3 flex-row flex-wrap gap-2"><Action theme={theme} onPress={() => { if (!propertyName.trim()) return; const value: ProjectProperty["value"] = propertyType === "checkbox" ? false : propertyType === "releases" ? [] : ""; updateProperties([...(current.properties ?? []), { id: `${Date.now()}`, name: propertyName.trim(), type: propertyType, value }]); setPropertyName(""); setAdding(false); setShowPropertyTypeMenu(false); }}>Salvar propriedade</Action><Action theme={theme} secondary onPress={() => { setAdding(false); setShowPropertyTypeMenu(false); }}>Cancelar</Action></View></View> : null}
-      {!(current.properties ?? []).length && !adding ? <View className="items-center py-5"><Text style={{ color: theme.muted }} className="mb-2 text-xs">Nenhuma propriedade criada</Text><Body theme={theme}>Adicione campos para guardar links, datas, opções e outras informações do projeto.</Body></View> : null}
-    </Panel>
-    <Panel theme={theme}><SectionTitle theme={theme}>Notas</SectionTitle><Body theme={theme}>{current.notes || "Sem notas por enquanto."}</Body></Panel>{confirmDelete ? <Panel theme={theme}><Body theme={theme}>Excluir {current.name}? Essa ação não pode ser desfeita.</Body><View className="mt-3 flex-row gap-2"><Action theme={theme} secondary onPress={() => setConfirmDelete(false)}>Cancelar</Action><Action theme={theme} danger onPress={() => onDelete(current.id)}>Excluir projeto</Action></View></Panel> : <LinkText theme={theme} onPress={() => setConfirmDelete(true)}>Excluir projeto</LinkText>}</ScrollView> : null}</View></KeyboardAvoidingView></Modal>;
+  const updateProperties = (items: ProjectProperty[]) => {
+    if (current) onUpdate(current.id, { properties: items });
+  };
+  return (
+    <ProjectModalWrapper visible={!!current} theme={theme} onClose={onClose}>
+      <KeyboardAvoidingView
+        className="flex-1 justify-end bg-black/60"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View
+          className="h-[94%] border-t p-5"
+          style={{
+            backgroundColor: theme.background,
+            borderColor: theme.border,
+            borderTopWidth: theme.borderWidth,
+            borderTopLeftRadius: theme.borderRadius,
+            borderTopRightRadius: theme.borderRadius,
+            overflow: 'hidden'
+          }}
+        >
+          <View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} />
+          <View className="mb-4 flex-row items-center justify-between">
+            <View className="flex-1 pr-3">
+              <Eyebrow theme={theme}>DETALHES DO PROJETO</Eyebrow>
+              <Text
+                numberOfLines={1}
+                style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                className="mt-1 text-xl font-black"
+              >
+                {current?.name}
+              </Text>
+            </View>
+            <View className="flex-row gap-2">
+              <Action theme={theme} secondary onPress={onEdit}>
+                Editar
+              </Action>
+              <CloseButton theme={theme} onPress={onClose} />
+            </View>
+          </View>
+          {current ? (
+            <ScrollView
+              style={{ flex: 1 }}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+              contentContainerStyle={{ paddingBottom: 18 }}
+            >
+              <ProjectHero project={current} theme={theme} />
+              <Panel theme={theme}>
+                <View className="mb-2">
+                  <SectionTitle theme={theme}>Resumo do projeto</SectionTitle>
+                </View>
+                {[
+                  {
+                    label: 'Responsável',
+                    value: current.owner || 'Não definido',
+                    color: current.owner ? theme.text : theme.muted
+                  },
+                  {
+                    label: 'Prazo',
+                    value: current.dueDate
+                      ? new Date(`${current.dueDate}T00:00:00`).toLocaleDateString('pt-BR')
+                      : 'Sem prazo',
+                    color: current.dueDate ? theme.text : theme.muted
+                  },
+                  {
+                    label: 'Criado em',
+                    value: new Date(current.createdAt).toLocaleDateString('pt-BR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    }),
+                    color: theme.text
+                  }
+                ].map((item) => (
+                  <View
+                    key={item.label}
+                    className="flex-row items-center justify-between border-b py-2"
+                    style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}
+                  >
+                    <Text
+                      style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+                      className="w-28 text-xs font-semibold"
+                    >
+                      {item.label}
+                    </Text>
+                    <Text
+                      numberOfLines={1}
+                      style={{ color: item.color, fontFamily: fontFamily(theme.font) }}
+                      className="ml-3 flex-1 text-right text-sm font-bold"
+                    >
+                      {item.value}
+                    </Text>
+                  </View>
+                ))}
+                {current.repositoryUrl?.trim() ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel="Abrir repositório no GitHub"
+                    onPress={() => openExternalUrl(current.repositoryUrl)}
+                    className="mt-3 flex-row items-center gap-3 p-3"
+                    style={{
+                      backgroundColor: theme.raised,
+                      borderColor: theme.border,
+                      borderWidth: theme.borderWidth,
+                      borderRadius: theme.borderRadius
+                    }}
+                  >
+                    <AppIcon name="github" size={20} color={theme.text} />
+                    <View className="flex-1">
+                      <Text
+                        style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                        className="text-xs font-bold"
+                      >
+                        Repositório no GitHub
+                      </Text>
+                      <Text
+                        numberOfLines={1}
+                        style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
+                        className="mt-0.5 text-[10px]"
+                      >
+                        {current.repositoryUrl.trim().replace('https://', '').replace('http://', '')}
+                      </Text>
+                    </View>
+                    <AppIcon name="arrowUpRight" size={16} color={theme.primary} />
+                  </Pressable>
+                ) : null}
+                {current.softwareDocumentDesignUrl?.trim() ? (
+                  <Pressable
+                    accessibilityRole="link"
+                    accessibilityLabel="Abrir Software Document Design (PDF)"
+                    onPress={() => openExternalUrl(current.softwareDocumentDesignUrl)}
+                    className="mt-2 flex-row items-center gap-3 p-3"
+                    style={{
+                      backgroundColor: theme.raised,
+                      borderColor: theme.border,
+                      borderWidth: theme.borderWidth,
+                      borderRadius: theme.borderRadius
+                    }}
+                  >
+                    <AppIcon name="drive" size={20} color={theme.text} />
+                    <View className="flex-1">
+                      <Text
+                        style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                        className="text-xs font-bold"
+                      >
+                        Software Document Design
+                      </Text>
+                      <Text
+                        numberOfLines={1}
+                        style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
+                        className="mt-0.5 text-[10px]"
+                      >
+                        {current.softwareDocumentDesignUrl.trim().replace('https://', '').replace('http://', '')}
+                      </Text>
+                    </View>
+                    <AppIcon name="arrowUpRight" size={16} color={theme.primary} />
+                  </Pressable>
+                ) : null}
+              </Panel>
+              <Panel theme={theme}>
+                <View className="mb-2">
+                  <SectionTitle theme={theme}>Lista de tarefas</SectionTitle>
+                  <Body theme={theme}>Vincule uma lista para acompanhar suas tarefas neste projeto.</Body>
+                </View>
+                <View style={{ zIndex: showTaskListMenu ? 30 : 0, elevation: showTaskListMenu ? 30 : 0 }}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ expanded: showTaskListMenu }}
+                    onPress={() => setShowTaskListMenu((open) => !open)}
+                    className="h-10 flex-row items-center justify-between px-3"
+                    style={{
+                      backgroundColor: theme.surface,
+                      borderColor: theme.border,
+                      borderWidth: theme.borderWidth,
+                      borderRadius: theme.borderRadius
+                    }}
+                  >
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        color:
+                          current.taskListId && taskLists.some((list) => list.id === current.taskListId)
+                            ? theme.text
+                            : theme.muted,
+                        fontFamily: fontFamily(theme.font)
+                      }}
+                      className="flex-1 text-xs font-semibold"
+                    >
+                      {taskLists.find((list) => list.id === current.taskListId)?.name ?? 'Selecionar lista'}
+                    </Text>
+                    <AppIcon name={showTaskListMenu ? 'chevronUp' : 'chevronDown'} size={17} color={theme.primary} />
+                  </Pressable>
+                  {showTaskListMenu ? (
+                    <View
+                      className="mt-1 overflow-hidden"
+                      style={{
+                        maxHeight: 220,
+                        backgroundColor: theme.surface,
+                        borderColor: theme.border,
+                        borderWidth: theme.borderWidth,
+                        borderRadius: theme.borderRadius
+                      }}
+                    >
+                      <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                        {[{ id: '', name: 'Sem lista vinculada' }, ...taskLists].map((list) => (
+                          <Pressable
+                            key={list.id || 'none'}
+                            accessibilityRole="button"
+                            onPress={() => {
+                              onUpdate(current.id, { taskListId: list.id || undefined });
+                              setShowTaskListMenu(false);
+                            }}
+                            className="flex-row items-center justify-between px-3 py-2.5"
+                            style={{
+                              backgroundColor: current.taskListId === list.id ? theme.raised : theme.surface,
+                              borderBottomColor: theme.border,
+                              borderBottomWidth: theme.borderWidth
+                            }}
+                          >
+                            <Text
+                              numberOfLines={1}
+                              style={{
+                                color: current.taskListId === list.id ? theme.primary : theme.text,
+                                fontFamily: fontFamily(theme.font)
+                              }}
+                              className="flex-1 text-xs font-semibold"
+                            >
+                              {list.name}
+                            </Text>
+                            {current.taskListId === list.id ? (
+                              <AppIcon name="check" size={15} color={theme.primary} />
+                            ) : null}
+                          </Pressable>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  ) : null}
+                </View>
+                {(() => {
+                  const linked = taskLists.find((list) => list.id === current.taskListId);
+                  if (!linked) return null;
+                  const linkedTodos = todos.filter((todo) => todo.listId === linked.id);
+                  const done = linkedTodos.filter((todo) => todo.done).length;
+                  return (
+                    <View className="mt-3" style={{ borderColor: theme.border, borderTopWidth: theme.borderWidth }}>
+                      {linkedTodos.length ? (
+                        linkedTodos.map((todo) => (
+                          <View
+                            key={todo.id}
+                            className="flex-row items-center gap-2 border-b py-2"
+                            style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}
+                          >
+                            <View
+                              className="h-4 w-4 items-center justify-center"
+                              style={{
+                                backgroundColor: todo.done ? theme.primary : 'transparent',
+                                borderColor: todo.done ? theme.primary : theme.border,
+                                borderWidth: Math.max(1, theme.borderWidth),
+                                borderRadius: Math.min(theme.borderRadius, 4)
+                              }}
+                            >
+                              {todo.done ? (
+                                <AppIcon name="check" size={12} color={theme.background} strokeWidth={3} />
+                              ) : null}
+                            </View>
+                            <Text
+                              numberOfLines={1}
+                              style={{
+                                color: theme.text,
+                                fontFamily: fontFamily(theme.font),
+                                opacity: todo.done ? 0.7 : 1,
+                                textDecorationLine: todo.done ? 'line-through' : 'none'
+                              }}
+                              className="flex-1 text-xs"
+                            >
+                              {todo.text}
+                            </Text>
+                          </View>
+                        ))
+                      ) : (
+                        <Text
+                          style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+                          className="py-2 text-xs"
+                        >
+                          Esta lista ainda não tem tarefas.
+                        </Text>
+                      )}
+                      <Text
+                        style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+                        className="mt-2 text-[10px]"
+                      >
+                        {done} de {linkedTodos.length} concluídas
+                      </Text>
+                    </View>
+                  );
+                })()}
+              </Panel>
+              <Panel theme={theme}>
+                <View className="mb-3 flex-row flex-wrap items-center justify-between gap-2">
+                  <View className="flex-1 pr-2" style={{ minWidth: 0 }}>
+                    <SectionTitle theme={theme}>Propriedades</SectionTitle>
+                    <Body theme={theme}>Campos e valores salvos neste projeto.</Body>
+                  </View>
+                  <View className="shrink-0">
+                    <Action
+                      theme={theme}
+                      secondary
+                      onPress={() => {
+                        setAdding(!adding);
+                        setShowPropertyTypeMenu(false);
+                      }}
+                      icon={adding ? 'close' : 'plus'}
+                    >
+                      {adding ? 'Fechar' : 'Adicionar'}
+                    </Action>
+                  </View>
+                </View>
+                {(current.properties ?? []).map((item) => (
+                  <ProjectPropertyCard
+                    key={item.id}
+                    property={item}
+                    theme={theme}
+                    onSave={(value) =>
+                      updateProperties(
+                        (current.properties ?? []).map((entry) => (entry.id === item.id ? { ...entry, value } : entry))
+                      )
+                    }
+                    onCommit={(name, value, saveValue) =>
+                      updateProperties(
+                        (current.properties ?? []).map((entry) =>
+                          entry.id === item.id ? { ...entry, name, ...(saveValue ? { value } : {}) } : entry
+                        )
+                      )
+                    }
+                    onDelete={() =>
+                      updateProperties((current.properties ?? []).filter((entry) => entry.id !== item.id))
+                    }
+                  />
+                ))}
+                {adding ? (
+                  <View
+                    className="mt-3 p-3"
+                    style={{
+                      backgroundColor: theme.raised,
+                      borderColor: theme.border,
+                      borderWidth: theme.borderWidth,
+                      borderRadius: theme.borderRadius,
+                      zIndex: showPropertyTypeMenu ? 20 : 0,
+                      elevation: showPropertyTypeMenu ? 20 : 0
+                    }}
+                  >
+                    <Text
+                      style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                      className="mb-3 text-sm font-bold"
+                    >
+                      Nova propriedade
+                    </Text>
+                    <Text
+                      style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                      className="mb-1.5 text-xs font-semibold"
+                    >
+                      Nome do campo
+                    </Text>
+                    <TextInput
+                      value={propertyName}
+                      onChangeText={setPropertyName}
+                      placeholder="Ex.: Link do protótipo"
+                      placeholderTextColor={theme.muted}
+                      style={field}
+                    />
+                    <Text
+                      style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                      className="mb-1.5 mt-3 text-xs font-semibold"
+                    >
+                      Tipo do campo
+                    </Text>
+                    <View style={{ position: 'relative', zIndex: 21, elevation: 21 }}>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Selecionar tipo de propriedade"
+                        accessibilityState={{ expanded: showPropertyTypeMenu }}
+                        onPress={() => setShowPropertyTypeMenu((open) => !open)}
+                        className="h-11 flex-row items-center justify-between px-3"
+                        style={{
+                          backgroundColor: theme.surface,
+                          borderColor: theme.border,
+                          borderWidth: theme.borderWidth,
+                          borderRadius: theme.borderRadius
+                        }}
+                      >
+                        <Text
+                          style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                          className="text-xs font-bold"
+                        >
+                          {propertyTypes.find((item) => item.key === propertyType)?.label ?? 'Texto'}
+                        </Text>
+                        <AppIcon
+                          name={showPropertyTypeMenu ? 'chevronUp' : 'chevronDown'}
+                          size={18}
+                          color={theme.primary}
+                        />
+                      </Pressable>
+                      {showPropertyTypeMenu ? (
+                        <View
+                          className="mt-1 overflow-hidden"
+                          style={{
+                            maxHeight: 220,
+                            backgroundColor: theme.surface,
+                            borderColor: theme.border,
+                            borderWidth: theme.borderWidth,
+                            borderRadius: theme.borderRadius
+                          }}
+                        >
+                          <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
+                            {propertyTypes.map((item) => (
+                              <Pressable
+                                key={item.key}
+                                accessibilityRole="button"
+                                accessibilityState={{ selected: propertyType === item.key }}
+                                onPress={() => {
+                                  setPropertyType(item.key);
+                                  setShowPropertyTypeMenu(false);
+                                }}
+                                className="flex-row items-center justify-between px-3 py-2.5"
+                                style={{
+                                  backgroundColor: propertyType === item.key ? theme.raised : theme.surface,
+                                  borderBottomColor: theme.border,
+                                  borderBottomWidth: theme.borderWidth
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    color: propertyType === item.key ? theme.primary : theme.text,
+                                    fontFamily: fontFamily(theme.font)
+                                  }}
+                                  className="text-xs font-semibold"
+                                >
+                                  {item.label}
+                                </Text>
+                                {propertyType === item.key ? (
+                                  <AppIcon name="check" size={16} color={theme.primary} />
+                                ) : null}
+                              </Pressable>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      ) : null}
+                    </View>
+                    <View className="mt-3 flex-row flex-wrap gap-2">
+                      <Action
+                        theme={theme}
+                        onPress={() => {
+                          if (!propertyName.trim()) return;
+                          const value: ProjectProperty['value'] =
+                            propertyType === 'checkbox' ? false : propertyType === 'releases' ? [] : '';
+                          updateProperties([
+                            ...(current.properties ?? []),
+                            { id: `${Date.now()}`, name: propertyName.trim(), type: propertyType, value }
+                          ]);
+                          setPropertyName('');
+                          setAdding(false);
+                          setShowPropertyTypeMenu(false);
+                        }}
+                      >
+                        Salvar propriedade
+                      </Action>
+                      <Action
+                        theme={theme}
+                        secondary
+                        onPress={() => {
+                          setAdding(false);
+                          setShowPropertyTypeMenu(false);
+                        }}
+                      >
+                        Cancelar
+                      </Action>
+                    </View>
+                  </View>
+                ) : null}
+                {!(current.properties ?? []).length && !adding ? (
+                  <View className="items-center py-5">
+                    <Text style={{ color: theme.muted }} className="mb-2 text-xs">
+                      Nenhuma propriedade criada
+                    </Text>
+                    <Body theme={theme}>
+                      Adicione campos para guardar links, datas, opções e outras informações do projeto.
+                    </Body>
+                  </View>
+                ) : null}
+              </Panel>
+              <Panel theme={theme}>
+                <SectionTitle theme={theme}>Notas</SectionTitle>
+                <Body theme={theme}>{current.notes || 'Sem notas por enquanto.'}</Body>
+              </Panel>
+              {confirmDelete ? (
+                <Panel theme={theme}>
+                  <Body theme={theme}>Excluir {current.name}? Essa ação não pode ser desfeita.</Body>
+                  <View className="mt-3 flex-row gap-2">
+                    <Action theme={theme} secondary onPress={() => setConfirmDelete(false)}>
+                      Cancelar
+                    </Action>
+                    <Action theme={theme} danger onPress={() => onDelete(current.id)}>
+                      Excluir projeto
+                    </Action>
+                  </View>
+                </Panel>
+              ) : (
+                <LinkText theme={theme} onPress={() => setConfirmDelete(true)}>
+                  Excluir projeto
+                </LinkText>
+              )}
+            </ScrollView>
+          ) : null}
+        </View>
+      </KeyboardAvoidingView>
+    </ProjectModalWrapper>
+  );
 }
 
-export function ProjectPropertyCard({ property, theme, onSave, onCommit, onDelete }: { property: ProjectProperty; theme: ThemeSettings; onSave: (value: ProjectProperty["value"]) => void; onCommit: (name: string, value: ProjectProperty["value"], saveValue: boolean) => void; onDelete: () => void }) {
+export function ProjectPropertyCard({
+  property,
+  theme,
+  onSave,
+  onCommit,
+  onDelete
+}: {
+  property: ProjectProperty;
+  theme: ThemeSettings;
+  onSave: (value: ProjectProperty['value']) => void;
+  onCommit: (name: string, value: ProjectProperty['value'], saveValue: boolean) => void;
+  onDelete: () => void;
+}) {
   const [editing, setEditing] = useState(false);
   const [renamingOnly, setRenamingOnly] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [draft, setDraft] = useState<ProjectProperty["value"]>(property.value);
+  const [draft, setDraft] = useState<ProjectProperty['value']>(property.value);
   const [draftName, setDraftName] = useState(property.name);
-  const releases = Array.isArray(property.value) ? property.value as Release[] : [];
-  const startEditing = () => { setDraft(property.value); setDraftName(property.name); setRenamingOnly(property.type === "releases"); setEditing(true); setConfirmDelete(false); };
-  const cancelEditing = () => { setDraft(property.value); setDraftName(property.name); setRenamingOnly(false); setEditing(false); };
-  const saveEditing = () => { if (!draftName.trim()) return; onCommit(draftName.trim(), draft, !renamingOnly); setRenamingOnly(false); setEditing(false); };
-  const changeText = (value: string) => setDraft(property.type === "number" && value ? Number(value) : value);
+  const releases = Array.isArray(property.value) ? (property.value as Release[]) : [];
+  const startEditing = () => {
+    setDraft(property.value);
+    setDraftName(property.name);
+    setRenamingOnly(property.type === 'releases');
+    setEditing(true);
+    setConfirmDelete(false);
+  };
+  const cancelEditing = () => {
+    setDraft(property.value);
+    setDraftName(property.name);
+    setRenamingOnly(false);
+    setEditing(false);
+  };
+  const saveEditing = () => {
+    if (!draftName.trim()) return;
+    onCommit(draftName.trim(), draft, !renamingOnly);
+    setRenamingOnly(false);
+    setEditing(false);
+  };
+  const changeText = (value: string) => setDraft(property.type === 'number' && value ? Number(value) : value);
   const checkboxValue = Boolean(editing ? draft : property.value);
-  const checkbox = <Pressable accessibilityRole="checkbox" accessibilityLabel={property.name} accessibilityState={{ checked: checkboxValue }} onPress={() => editing ? setDraft(!checkboxValue) : onSave(!checkboxValue)} className="flex-row items-center gap-2"><View className="h-6 w-6 items-center justify-center" style={{ backgroundColor: checkboxValue ? theme.primary : theme.surface, borderColor: checkboxValue ? theme.primary : theme.muted, borderWidth: Math.max(1, theme.borderWidth), borderRadius: Math.min(theme.borderRadius, 7) }}>{checkboxValue ? <AppIcon name="check" size={16} color={theme.background} strokeWidth={3} /> : null}</View><Text style={{ color: checkboxValue ? theme.text : theme.muted, fontFamily: fontFamily(theme.font) }} className="text-xs font-semibold">{checkboxValue ? "Concluído" : "Pendente"}</Text></Pressable>;
+  const checkbox = (
+    <Pressable
+      accessibilityRole="checkbox"
+      accessibilityLabel={property.name}
+      accessibilityState={{ checked: checkboxValue }}
+      onPress={() => (editing ? setDraft(!checkboxValue) : onSave(!checkboxValue))}
+      className="flex-row items-center gap-2"
+    >
+      <View
+        className="h-6 w-6 items-center justify-center"
+        style={{
+          backgroundColor: checkboxValue ? theme.primary : theme.surface,
+          borderColor: checkboxValue ? theme.primary : theme.muted,
+          borderWidth: Math.max(1, theme.borderWidth),
+          borderRadius: Math.min(theme.borderRadius, 7)
+        }}
+      >
+        {checkboxValue ? <AppIcon name="check" size={16} color={theme.background} strokeWidth={3} /> : null}
+      </View>
+      <Text
+        style={{ color: checkboxValue ? theme.text : theme.muted, fontFamily: fontFamily(theme.font) }}
+        className="text-xs font-semibold"
+      >
+        {checkboxValue ? 'Concluído' : 'Pendente'}
+      </Text>
+    </Pressable>
+  );
   const value = property.value;
   const typeLabel = propertyTypes.find((item) => item.key === property.type)?.label ?? property.type;
-  const displayValue = value === "" || value == null ? "Sem valor definido" : property.type === "date" ? formatDateValue(String(value)) : String(value);
-  return <View className="border-b py-2" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}>
-    <View className={editing ? "flex-col gap-2" : "flex-row items-center gap-2"}>
-      {!editing ? <View className="w-24 shrink-0"><Text numberOfLines={2} style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-xs font-semibold">{property.name}</Text><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font), opacity: 0.7 }} numberOfLines={1} className="mt-0.5 text-[8px]">{typeLabel}</Text></View> : null}
-      {editing ? <TextInput accessibilityLabel="Nome da propriedade" value={draftName} onChangeText={setDraftName} placeholder="Nome" placeholderTextColor={theme.muted} style={[inputDynamic(theme), { height: 36, paddingHorizontal: 8, paddingVertical: 6, fontSize: 11 }]} /> : null}
-      <View className={editing ? "flex-row items-center gap-2" : "flex-1"}><View className="flex-1">{editing ? property.type === "checkbox" ? checkbox
-        : property.type === "select" ? <ChoiceRow options={property.options?.length ? property.options : ["A fazer", "Em andamento", "Concluído"]} value={String(draft ?? "")} onChange={setDraft} theme={theme} />
-          : property.type === "releases" ? <ReleaseList property={property} theme={theme} onChange={onSave} />
-            : property.type === "date" ? <DatePickerField value={String(draft ?? "")} onChange={changeText} theme={theme} />
-              : <TextInput multiline={property.type === "text"} keyboardType={property.type === "number" ? "numeric" : "default"} autoCapitalize={property.type === "url" ? "none" : "sentences"} value={String(draft ?? "")} onChangeText={changeText} placeholder={property.type === "url" ? "https://" : "Digite um valor"} placeholderTextColor={theme.muted} style={[inputDynamic(theme), { height: 32, paddingHorizontal: 6, paddingVertical: 5, fontSize: 10, textAlignVertical: "center" }]} />
-        : property.type === "checkbox" ? checkbox
-          : property.type === "releases" ? <ReleaseList property={{ ...property, value: releases }} theme={theme} onChange={onSave} /> : property.type === "url" && String(value ?? "").trim() ? <Pressable accessibilityRole="link" onPress={() => openExternalUrl(String(value).trim())} className="flex-row items-center gap-1"><Text numberOfLines={2} selectable style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="flex-1 text-xs font-semibold">{String(value).trim()}</Text><AppIcon name="arrowUpRight" size={13} color={theme.primary} /></Pressable>
-              : <Text numberOfLines={property.type === "text" ? 3 : 2} selectable style={{ color: value === "" || value == null ? theme.muted : theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-semibold">{displayValue}</Text>}</View>
-      {editing ? <><Pressable accessibilityRole="button" accessibilityLabel={`Salvar ${property.name}`} hitSlop={7} onPress={saveEditing} className="h-8 w-7 items-center justify-center"><AppIcon name="check" size={16} color={theme.primary} /></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Cancelar edição" hitSlop={7} onPress={cancelEditing} className="h-8 w-7 items-center justify-center"><AppIcon name="close" size={15} color={theme.muted} /></Pressable></> : null}
+  const displayValue =
+    value === '' || value == null
+      ? 'Sem valor definido'
+      : property.type === 'date'
+        ? formatDateValue(String(value))
+        : String(value);
+  return (
+    <View className="border-b py-2" style={{ borderColor: theme.border, borderBottomWidth: theme.borderWidth }}>
+      <View className={editing ? 'flex-col gap-2' : 'flex-row items-center gap-2'}>
+        {!editing ? (
+          <View className="w-24 shrink-0">
+            <Text
+              numberOfLines={2}
+              style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+              className="text-xs font-semibold"
+            >
+              {property.name}
+            </Text>
+            <Text
+              style={{ color: theme.muted, fontFamily: fontFamily(theme.font), opacity: 0.7 }}
+              numberOfLines={1}
+              className="mt-0.5 text-[8px]"
+            >
+              {typeLabel}
+            </Text>
+          </View>
+        ) : null}
+        {editing ? (
+          <TextInput
+            accessibilityLabel="Nome da propriedade"
+            value={draftName}
+            onChangeText={setDraftName}
+            placeholder="Nome"
+            placeholderTextColor={theme.muted}
+            style={[inputDynamic(theme), { height: 36, paddingHorizontal: 8, paddingVertical: 6, fontSize: 11 }]}
+          />
+        ) : null}
+        <View className={editing ? 'flex-row items-center gap-2' : 'flex-1'}>
+          <View className="flex-1">
+            {editing ? (
+              property.type === 'checkbox' ? (
+                checkbox
+              ) : property.type === 'select' ? (
+                <ChoiceRow
+                  options={property.options?.length ? property.options : ['A fazer', 'Em andamento', 'Concluído']}
+                  value={String(draft ?? '')}
+                  onChange={setDraft}
+                  theme={theme}
+                />
+              ) : property.type === 'releases' ? (
+                <ReleaseList property={property} theme={theme} onChange={onSave} />
+              ) : property.type === 'date' ? (
+                <DatePickerField value={String(draft ?? '')} onChange={changeText} theme={theme} />
+              ) : (
+                <TextInput
+                  multiline={property.type === 'text'}
+                  keyboardType={property.type === 'number' ? 'numeric' : 'default'}
+                  autoCapitalize={property.type === 'url' ? 'none' : 'sentences'}
+                  value={String(draft ?? '')}
+                  onChangeText={changeText}
+                  placeholder={property.type === 'url' ? 'https://' : 'Digite um valor'}
+                  placeholderTextColor={theme.muted}
+                  style={[
+                    inputDynamic(theme),
+                    { height: 32, paddingHorizontal: 6, paddingVertical: 5, fontSize: 10, textAlignVertical: 'center' }
+                  ]}
+                />
+              )
+            ) : property.type === 'checkbox' ? (
+              checkbox
+            ) : property.type === 'releases' ? (
+              <ReleaseList property={{ ...property, value: releases }} theme={theme} onChange={onSave} />
+            ) : property.type === 'url' && String(value ?? '').trim() ? (
+              <Pressable
+                accessibilityRole="link"
+                onPress={() => openExternalUrl(String(value).trim())}
+                className="flex-row items-center gap-1"
+              >
+                <Text
+                  numberOfLines={2}
+                  selectable
+                  style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
+                  className="flex-1 text-xs font-semibold"
+                >
+                  {String(value).trim()}
+                </Text>
+                <AppIcon name="arrowUpRight" size={13} color={theme.primary} />
+              </Pressable>
+            ) : (
+              <Text
+                numberOfLines={property.type === 'text' ? 3 : 2}
+                selectable
+                style={{
+                  color: value === '' || value == null ? theme.muted : theme.text,
+                  fontFamily: fontFamily(theme.font)
+                }}
+                className="text-xs font-semibold"
+              >
+                {displayValue}
+              </Text>
+            )}
+          </View>
+          {editing ? (
+            <>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Salvar ${property.name}`}
+                hitSlop={7}
+                onPress={saveEditing}
+                className="h-8 w-7 items-center justify-center"
+              >
+                <AppIcon name="check" size={16} color={theme.primary} />
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cancelar edição"
+                hitSlop={7}
+                onPress={cancelEditing}
+                className="h-8 w-7 items-center justify-center"
+              >
+                <AppIcon name="close" size={15} color={theme.muted} />
+              </Pressable>
+            </>
+          ) : null}
+        </View>
+        {!editing ? (
+          <>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Editar ${property.name}`}
+              hitSlop={7}
+              onPress={startEditing}
+              className="h-8 w-7 items-center justify-center"
+              style={{ opacity: 0.62 }}
+            >
+              <AppIcon name="pencil" size={14} color={theme.muted} />
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Excluir propriedade ${property.name}`}
+              hitSlop={7}
+              onPress={() => setConfirmDelete(true)}
+              className="h-8 w-7 items-center justify-center"
+              style={{ opacity: 0.62 }}
+            >
+              <AppIcon name="trash" size={14} color={theme.muted} />
+            </Pressable>
+          </>
+        ) : null}
       </View>
-      {!editing ? <><Pressable accessibilityRole="button" accessibilityLabel={`Editar ${property.name}`} hitSlop={7} onPress={startEditing} className="h-8 w-7 items-center justify-center" style={{ opacity: 0.62 }}><AppIcon name="pencil" size={14} color={theme.muted} /></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`Excluir propriedade ${property.name}`} hitSlop={7} onPress={() => setConfirmDelete(true)} className="h-8 w-7 items-center justify-center" style={{ opacity: 0.62 }}><AppIcon name="trash" size={14} color={theme.muted} /></Pressable></> : null}
+      {confirmDelete ? (
+        <View className="mt-2 flex-row flex-wrap items-center gap-2">
+          <Text style={{ color: theme.text }} className="flex-1 text-xs">
+            Excluir “{property.name}” e o valor salvo?
+          </Text>
+          <Action theme={theme} danger onPress={onDelete}>
+            Excluir
+          </Action>
+          <Action theme={theme} secondary onPress={() => setConfirmDelete(false)}>
+            Cancelar
+          </Action>
+        </View>
+      ) : null}
     </View>
-    {confirmDelete ? <View className="mt-2 flex-row flex-wrap items-center gap-2"><Text style={{ color: theme.text }} className="flex-1 text-xs">Excluir “{property.name}” e o valor salvo?</Text><Action theme={theme} danger onPress={onDelete}>Excluir</Action><Action theme={theme} secondary onPress={() => setConfirmDelete(false)}>Cancelar</Action></View> : null}
-  </View>;
+  );
 }
 
-export function ReleaseList({ property, theme, onChange }: { property: ProjectProperty; theme: ThemeSettings; onChange: (value: Release[]) => void }) {
-  const releases = Array.isArray(property.value) ? property.value as Release[] : [];
+export function ReleaseList({
+  property,
+  theme,
+  onChange
+}: {
+  property: ProjectProperty;
+  theme: ThemeSettings;
+  onChange: (value: Release[]) => void;
+}) {
+  const releases = Array.isArray(property.value) ? (property.value as Release[]) : [];
   const [visible, setVisible] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [version, setVersion] = useState("");
-  const [date, setDate] = useState("");
-  const [url, setUrl] = useState("");
-  const [changelogUrl, setChangelogUrl] = useState("");
-  const [error, setError] = useState("");
+  const [version, setVersion] = useState('');
+  const [date, setDate] = useState('');
+  const [url, setUrl] = useState('');
+  const [changelogUrl, setChangelogUrl] = useState('');
+  const [error, setError] = useState('');
   const input = inputDynamic(theme);
-  const close = () => { setVisible(false); setAdding(false); setError(""); };
-  const addRelease = () => {
-    if (!version.trim() || !date.trim()) { setError("Informe a versão e a data."); return; }
-    onChange([{ id: `${Date.now()}`, version: version.trim(), date: date.trim(), url: url.trim(), changelogUrl: changelogUrl.trim() }, ...releases]);
-    setVersion(""); setDate(""); setUrl(""); setChangelogUrl(""); setError(""); setAdding(false);
+  const close = () => {
+    setVisible(false);
+    setAdding(false);
+    setError('');
   };
-  return <>
-    <View className="w-full items-center">{releases.length ? <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="mb-1 text-center text-[10px]">{releases.length} {releases.length === 1 ? "release" : "releases"}</Text> : null}<Action theme={theme} secondary onPress={() => setVisible(true)}>Abrir releases</Action></View>
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={close}>
-      <KeyboardAvoidingView className="flex-1 justify-end bg-black/60" behavior={Platform.OS === "ios" ? "padding" : "height"}>
-        <View className="max-h-[86%] border-t p-4" style={{ height: "86%", backgroundColor: theme.background, borderColor: theme.border, borderTopWidth: theme.borderWidth, borderTopLeftRadius: theme.borderRadius, borderTopRightRadius: theme.borderRadius, overflow: "hidden" }}>
-          <View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} />
-          <View className="mb-3 flex-row items-center justify-between"><View><Eyebrow theme={theme}>PROPRIEDADE DO PROJETO</Eyebrow><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mt-1 text-lg font-black">{property.name}</Text></View><CloseButton theme={theme} onPress={close} /></View>
-          <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled" keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"} contentContainerStyle={{ paddingBottom: 12 }}>
-            {releases.length ? releases.map((release) => <View key={release.id} className="mb-2 p-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
-              <View className="flex-row items-center gap-2"><View className="flex-1"><Text numberOfLines={1} style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-sm font-bold">{release.version}</Text><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="mt-0.5 text-[10px]">{formatDateValue(release.date)}</Text></View><Pressable accessibilityRole="button" accessibilityLabel={`Remover release ${release.version}`} hitSlop={6} onPress={() => onChange(releases.filter((item) => item.id !== release.id))} className="h-8 w-8 items-center justify-center"><AppIcon name="trash" size={16} color={theme.muted} /></Pressable></View>
-              {release.url?.trim() || release.changelogUrl?.trim() ? <View className="mt-2 flex-row flex-wrap gap-3">{release.url?.trim() ? <Pressable accessibilityRole="link" onPress={() => openExternalUrl(release.url)} className="flex-row items-center gap-1"><AppIcon name="arrowUpRight" size={13} color={theme.primary} /><Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-[10px] font-semibold">Abrir release</Text></Pressable> : null}{release.changelogUrl?.trim() ? <Pressable accessibilityRole="link" onPress={() => openExternalUrl(release.changelogUrl)} className="flex-row items-center gap-1"><AppIcon name="arrowUpRight" size={13} color={theme.primary} /><Text style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }} className="text-[10px] font-semibold">Abrir changelog</Text></Pressable> : null}</View> : <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="mt-2 text-[10px]">Sem links cadastrados</Text>}
-            </View>) : <View className="items-center py-8"><Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-xs">Ainda não há versões cadastradas.</Text></View>}
-            {adding ? <View className="mt-1 gap-2 p-3" style={{ backgroundColor: theme.surface, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}>
-              <Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">Nova release</Text>
-              <View className="flex-row gap-2"><TextInput accessibilityLabel="Versão da release" value={version} onChangeText={(value) => { setVersion(value); setError(""); }} placeholder="Versão" placeholderTextColor={theme.muted} style={[input, { flex: 1 }]} /><DatePickerField accessibilityLabel="Data da release" value={date} onChange={(value) => { setDate(value); setError(""); }} placeholder="Data" theme={theme} style={{ flex: 1 }} /></View>
-              <TextInput accessibilityLabel="Link da release (opcional)" value={url} onChangeText={setUrl} placeholder="Link da release (opcional)" placeholderTextColor={theme.muted} autoCapitalize="none" style={input} />
-              <TextInput accessibilityLabel="Link do changelog (opcional)" value={changelogUrl} onChangeText={setChangelogUrl} placeholder="Link do changelog (opcional)" placeholderTextColor={theme.muted} autoCapitalize="none" style={input} />
-              {error ? <Text style={{ color: theme.danger, fontFamily: fontFamily(theme.font) }} className="text-[10px]">{error}</Text> : null}
-              <View className="flex-row justify-end"><Action theme={theme} secondary onPress={() => { setAdding(false); setError(""); }}>Cancelar</Action></View>
-            </View> : null}
-          </ScrollView>
-          <View className="mt-2 flex-row justify-end"><Action theme={theme} icon="plus" onPress={() => { if (adding) addRelease(); else setAdding(true); }}>Adicionar release</Action></View>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
-  </>;
+  const addRelease = () => {
+    if (!version.trim() || !date.trim()) {
+      setError('Informe a versão e a data.');
+      return;
+    }
+    onChange([
+      {
+        id: `${Date.now()}`,
+        version: version.trim(),
+        date: date.trim(),
+        url: url.trim(),
+        changelogUrl: changelogUrl.trim()
+      },
+      ...releases
+    ]);
+    setVersion('');
+    setDate('');
+    setUrl('');
+    setChangelogUrl('');
+    setError('');
+    setAdding(false);
+  };
+  return (
+    <>
+      <View className="w-full items-center">
+        {releases.length ? (
+          <Text
+            style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+            className="mb-1 text-center text-[10px]"
+          >
+            {releases.length} {releases.length === 1 ? 'release' : 'releases'}
+          </Text>
+        ) : null}
+        <Action theme={theme} secondary onPress={() => setVisible(true)}>
+          Abrir releases
+        </Action>
+      </View>
+      <Modal animationType="slide" transparent visible={visible} onRequestClose={close}>
+        <KeyboardAvoidingView
+          className="flex-1 justify-end bg-black/60"
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <View
+            className="max-h-[86%] border-t p-4"
+            style={{
+              height: '86%',
+              backgroundColor: theme.background,
+              borderColor: theme.border,
+              borderTopWidth: theme.borderWidth,
+              borderTopLeftRadius: theme.borderRadius,
+              borderTopRightRadius: theme.borderRadius,
+              overflow: 'hidden'
+            }}
+          >
+            <View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} />
+            <View className="mb-3 flex-row items-center justify-between">
+              <View>
+                <Eyebrow theme={theme}>PROPRIEDADE DO PROJETO</Eyebrow>
+                <Text
+                  style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                  className="mt-1 text-lg font-black"
+                >
+                  {property.name}
+                </Text>
+              </View>
+              <CloseButton theme={theme} onPress={close} />
+            </View>
+            <ScrollView
+              style={{ flex: 1 }}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+              contentContainerStyle={{ paddingBottom: 12 }}
+            >
+              {releases.length ? (
+                releases.map((release) => (
+                  <View
+                    key={release.id}
+                    className="mb-2 p-3"
+                    style={{
+                      backgroundColor: theme.surface,
+                      borderColor: theme.border,
+                      borderWidth: theme.borderWidth,
+                      borderRadius: theme.borderRadius
+                    }}
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <View className="flex-1">
+                        <Text
+                          numberOfLines={1}
+                          style={{ color: theme.text, fontFamily: fontFamily(theme.font) }}
+                          className="text-sm font-bold"
+                        >
+                          {release.version}
+                        </Text>
+                        <Text
+                          style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+                          className="mt-0.5 text-[10px]"
+                        >
+                          {formatDateValue(release.date)}
+                        </Text>
+                      </View>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={`Remover release ${release.version}`}
+                        hitSlop={6}
+                        onPress={() => onChange(releases.filter((item) => item.id !== release.id))}
+                        className="h-8 w-8 items-center justify-center"
+                      >
+                        <AppIcon name="trash" size={16} color={theme.muted} />
+                      </Pressable>
+                    </View>
+                    {release.url?.trim() || release.changelogUrl?.trim() ? (
+                      <View className="mt-2 flex-row flex-wrap gap-3">
+                        {release.url?.trim() ? (
+                          <Pressable
+                            accessibilityRole="link"
+                            onPress={() => openExternalUrl(release.url)}
+                            className="flex-row items-center gap-1"
+                          >
+                            <AppIcon name="arrowUpRight" size={13} color={theme.primary} />
+                            <Text
+                              style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
+                              className="text-[10px] font-semibold"
+                            >
+                              Abrir release
+                            </Text>
+                          </Pressable>
+                        ) : null}
+                        {release.changelogUrl?.trim() ? (
+                          <Pressable
+                            accessibilityRole="link"
+                            onPress={() => openExternalUrl(release.changelogUrl)}
+                            className="flex-row items-center gap-1"
+                          >
+                            <AppIcon name="arrowUpRight" size={13} color={theme.primary} />
+                            <Text
+                              style={{ color: theme.primary, fontFamily: fontFamily(theme.font) }}
+                              className="text-[10px] font-semibold"
+                            >
+                              Abrir changelog
+                            </Text>
+                          </Pressable>
+                        ) : null}
+                      </View>
+                    ) : (
+                      <Text
+                        style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }}
+                        className="mt-2 text-[10px]"
+                      >
+                        Sem links cadastrados
+                      </Text>
+                    )}
+                  </View>
+                ))
+              ) : (
+                <View className="items-center py-8">
+                  <Text style={{ color: theme.muted, fontFamily: fontFamily(theme.font) }} className="text-xs">
+                    Ainda não há versões cadastradas.
+                  </Text>
+                </View>
+              )}
+              {adding ? (
+                <View
+                  className="mt-1 gap-2 p-3"
+                  style={{
+                    backgroundColor: theme.surface,
+                    borderColor: theme.border,
+                    borderWidth: theme.borderWidth,
+                    borderRadius: theme.borderRadius
+                  }}
+                >
+                  <Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="text-xs font-bold">
+                    Nova release
+                  </Text>
+                  <View className="flex-row gap-2">
+                    <TextInput
+                      accessibilityLabel="Versão da release"
+                      value={version}
+                      onChangeText={(value) => {
+                        setVersion(value);
+                        setError('');
+                      }}
+                      placeholder="Versão"
+                      placeholderTextColor={theme.muted}
+                      style={[input, { flex: 1 }]}
+                    />
+                    <DatePickerField
+                      accessibilityLabel="Data da release"
+                      value={date}
+                      onChange={(value) => {
+                        setDate(value);
+                        setError('');
+                      }}
+                      placeholder="Data"
+                      theme={theme}
+                      style={{ flex: 1 }}
+                    />
+                  </View>
+                  <TextInput
+                    accessibilityLabel="Link da release (opcional)"
+                    value={url}
+                    onChangeText={setUrl}
+                    placeholder="Link da release (opcional)"
+                    placeholderTextColor={theme.muted}
+                    autoCapitalize="none"
+                    style={input}
+                  />
+                  <TextInput
+                    accessibilityLabel="Link do changelog (opcional)"
+                    value={changelogUrl}
+                    onChangeText={setChangelogUrl}
+                    placeholder="Link do changelog (opcional)"
+                    placeholderTextColor={theme.muted}
+                    autoCapitalize="none"
+                    style={input}
+                  />
+                  {error ? (
+                    <Text style={{ color: theme.danger, fontFamily: fontFamily(theme.font) }} className="text-[10px]">
+                      {error}
+                    </Text>
+                  ) : null}
+                  <View className="flex-row justify-end">
+                    <Action
+                      theme={theme}
+                      secondary
+                      onPress={() => {
+                        setAdding(false);
+                        setError('');
+                      }}
+                    >
+                      Cancelar
+                    </Action>
+                  </View>
+                </View>
+              ) : null}
+            </ScrollView>
+            <View className="mt-2 flex-row justify-end">
+              <Action
+                theme={theme}
+                icon="plus"
+                onPress={() => {
+                  if (adding) addRelease();
+                  else setAdding(true);
+                }}
+              >
+                Adicionar release
+              </Action>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
+  );
 }

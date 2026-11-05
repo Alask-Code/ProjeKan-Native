@@ -1,37 +1,289 @@
-import React, { useEffect, useState } from "react";
-import { Image, Platform, ScrollView, Text, TextInput, View } from "react-native";
-import { Project, ProjectDraft, ProjectStatus } from "../../stores/nativeProjectStore";
-import { ThemeSettings } from "../../stores/themeStore";
-import { columns } from "../../constants/app";
-import { Action, AppIcon, Body, ChoiceRow, CloseButton, Eyebrow, Field } from "../../components/ui";
-import { fontFamily, imageSource, inputDynamic } from "../../utils/theme";
-import { chooseImage } from "../../utils/media";
-import { ProjectModalWrapper } from "./ProjectModalWrapper";
-import { DatePickerField } from "../DatePickerField";
-export function ImageField({ label, value, aspect, theme, onChange }: { label: string; value: string | number | null; aspect: [number, number]; theme: ThemeSettings; onChange: (value: string | number | null) => void }) {
-  return <Field label={label} theme={theme}><View className="flex-row items-center gap-3">{value ? <View className="h-14 w-14 overflow-hidden" style={{ borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Image source={imageSource(value)} resizeMode="cover" className="h-full w-full" /></View> : <View className="h-14 w-14 items-center justify-center" style={{ backgroundColor: theme.raised, borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}><Text style={{ color: theme.muted }} className="text-[9px]">Sem imagem</Text></View>}<View className="flex-1 flex-row flex-wrap gap-2"><Action theme={theme} onPress={async () => { const uri = await chooseImage(aspect); if (uri) onChange(uri); }}>Escolher arquivo</Action>{value ? <Action theme={theme} secondary onPress={() => onChange(null)}>Remover</Action> : null}</View></View></Field>;
+import React, { useEffect, useState } from 'react';
+import { Image, Platform, ScrollView, Text, TextInput, View } from 'react-native';
+import { Project, ProjectDraft, ProjectStatus } from '../../stores/nativeProjectStore';
+import { ThemeSettings } from '../../stores/themeStore';
+import { columns } from '../../constants/app';
+import { Action, AppIcon, Body, ChoiceRow, CloseButton, Eyebrow, Field } from '../../components/ui';
+import { fontFamily, imageSource, inputDynamic } from '../../utils/theme';
+import { chooseImage } from '../../utils/media';
+import { ProjectModalWrapper } from './ProjectModalWrapper';
+import { DatePickerField } from '../DatePickerField';
+
+export function ImageField({
+  label,
+  value,
+  aspect,
+  theme,
+  onChange
+}: {
+  label: string;
+  value: string | number | null;
+  aspect: [number, number];
+  theme: ThemeSettings;
+  onChange: (value: string | number | null) => void;
+}) {
+  return (
+    <Field label={label} theme={theme}>
+      <View className="flex-row items-center gap-3">
+        {value ? (
+          <View
+            className="h-14 w-14 overflow-hidden"
+            style={{ borderColor: theme.border, borderWidth: theme.borderWidth, borderRadius: theme.borderRadius }}
+          >
+            <Image source={imageSource(value)} resizeMode="cover" className="h-full w-full" />
+          </View>
+        ) : (
+          <View
+            className="h-14 w-14 items-center justify-center"
+            style={{
+              backgroundColor: theme.raised,
+              borderColor: theme.border,
+              borderWidth: theme.borderWidth,
+              borderRadius: theme.borderRadius
+            }}
+          >
+            <Text style={{ color: theme.muted }} className="text-[9px]">
+              Sem imagem
+            </Text>
+          </View>
+        )}
+        <View className="flex-1 flex-row flex-wrap gap-2">
+          <Action
+            theme={theme}
+            onPress={async () => {
+              const uri = await chooseImage(aspect);
+              if (uri) onChange(uri);
+            }}
+          >
+            Escolher arquivo
+          </Action>
+          {value ? (
+            <Action theme={theme} secondary onPress={() => onChange(null)}>
+              Remover
+            </Action>
+          ) : null}
+        </View>
+      </View>
+    </Field>
+  );
 }
 
-export function ProjectFormModal({ visible, project, theme, onClose, onSave }: { visible: boolean; project: Project | null; theme: ThemeSettings; onClose: () => void; onSave: (draft: ProjectDraft) => void }) {
-  const [name, setName] = useState(project?.name ?? "");
-  const [description, setDescription] = useState(project?.description ?? "");
-  const [status, setStatus] = useState<ProjectStatus>(project?.status ?? "unstarted");
-  const [priority, setPriority] = useState<Project["priority"]>(project?.priority ?? "Média");
-  const [owner, setOwner] = useState(project?.owner ?? "");
-  const [dueDate, setDueDate] = useState(project?.dueDate ?? "");
-  const [repositoryUrl, setRepositoryUrl] = useState(project?.repositoryUrl ?? "");
-  const [softwareDocumentDesignUrl, setSoftwareDocumentDesignUrl] = useState(project?.softwareDocumentDesignUrl ?? "");
-  const [notes, setNotes] = useState(project?.notes ?? "");
+export function ProjectFormModal({
+  visible,
+  project,
+  theme,
+  onClose,
+  onSave
+}: {
+  visible: boolean;
+  project: Project | null;
+  theme: ThemeSettings;
+  onClose: () => void;
+  onSave: (draft: ProjectDraft) => void;
+}) {
+  const [name, setName] = useState(project?.name ?? '');
+  const [description, setDescription] = useState(project?.description ?? '');
+  const [status, setStatus] = useState<ProjectStatus>(project?.status ?? 'unstarted');
+  const [priority, setPriority] = useState<Project['priority']>(project?.priority ?? 'Média');
+  const [owner, setOwner] = useState(project?.owner ?? '');
+  const [dueDate, setDueDate] = useState(project?.dueDate ?? '');
+  const [repositoryUrl, setRepositoryUrl] = useState(project?.repositoryUrl ?? '');
+  const [softwareDocumentDesignUrl, setSoftwareDocumentDesignUrl] = useState(project?.softwareDocumentDesignUrl ?? '');
+  const [notes, setNotes] = useState(project?.notes ?? '');
   const [logo, setLogo] = useState<string | number | null>(project?.logo ?? null);
   const [backgroundImage, setBackgroundImage] = useState<string | number | null>(project?.backgroundImage ?? null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   React.useEffect(() => {
-    setName(project?.name ?? ""); setDescription(project?.description ?? ""); setStatus(project?.status ?? "unstarted");
-    setPriority(project?.priority ?? "Média"); setOwner(project?.owner ?? ""); setDueDate(project?.dueDate ?? "");
-    setRepositoryUrl(project?.repositoryUrl ?? ""); setSoftwareDocumentDesignUrl(project?.softwareDocumentDesignUrl ?? ""); setNotes(project?.notes ?? "");
+    setName(project?.name ?? '');
+    setDescription(project?.description ?? '');
+    setStatus(project?.status ?? 'unstarted');
+    setPriority(project?.priority ?? 'Média');
+    setOwner(project?.owner ?? '');
+    setDueDate(project?.dueDate ?? '');
+    setRepositoryUrl(project?.repositoryUrl ?? '');
+    setSoftwareDocumentDesignUrl(project?.softwareDocumentDesignUrl ?? '');
+    setNotes(project?.notes ?? '');
     setLogo(project?.logo ?? null);
-    setBackgroundImage(project?.backgroundImage ?? null); setError("");
+    setBackgroundImage(project?.backgroundImage ?? null);
+    setError('');
   }, [project, visible]);
   const field = inputDynamic(theme);
-  return <ProjectModalWrapper visible={visible} theme={theme} onClose={onClose}><View className="p-5" style={{ flex: 1, flexShrink: 1 }}><View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} /><View className="mb-4 flex-row items-center justify-between"><View><Eyebrow theme={theme}>{project ? "EDITAR PROJETO" : "NOVO ESPAÇO DE TRABALHO"}</Eyebrow><Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mt-1 text-xl font-black">{project ? "Editar projeto" : "Criar projeto"}</Text></View><CloseButton theme={theme} onPress={onClose} /></View><ScrollView style={{ flex: 1 }} keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"} keyboardShouldPersistTaps="handled"><Field label="Nome do projeto" theme={theme}><TextInput value={name} onChangeText={setName} placeholder="Ex.: Lançamento do produto" placeholderTextColor={theme.muted} style={field} /></Field><Field label="Descrição" theme={theme}><TextInput multiline value={description} onChangeText={setDescription} placeholder="Qual é o objetivo deste projeto?" placeholderTextColor={theme.muted} style={[field, { minHeight: 72, textAlignVertical: "top" }]} /></Field><Field label="Status" theme={theme}><ChoiceRow options={columns.map((column) => ({ key: column.key, label: column.label }))} value={status} onChange={(value) => setStatus(value as ProjectStatus)} theme={theme} /></Field><Field label="Prioridade" theme={theme}><ChoiceRow options={["Baixa", "Média", "Alta"].map((value) => ({ key: value, label: value }))} value={priority} onChange={(value) => setPriority(value as Project["priority"])} theme={theme} /></Field><Field label="Responsável" theme={theme}><TextInput value={owner} onChangeText={setOwner} placeholder="Nome" placeholderTextColor={theme.muted} style={field} /></Field><Field label="Data de entrega" theme={theme}><DatePickerField value={dueDate} onChange={setDueDate} theme={theme} /></Field><Field label="Repositório (opcional)" theme={theme}><View className="flex-row items-center gap-2" style={[field, { flexDirection: "row", alignItems: "center" }]}><AppIcon name="github" size={18} color={theme.muted} /><TextInput value={repositoryUrl} onChangeText={setRepositoryUrl} placeholder="https://github.com/usuario/projeto" placeholderTextColor={theme.muted} autoCapitalize="none" style={{ flex: 1, paddingVertical: 0, color: theme.text, fontFamily: fontFamily(theme.font), fontSize: 12 }} /></View></Field><Field label="Software Document Design (PDF)" theme={theme}><View className="flex-row items-center gap-2" style={[field, { flexDirection: "row", alignItems: "center" }]}><AppIcon name="drive" size={18} color={theme.muted} /><TextInput value={softwareDocumentDesignUrl} onChangeText={setSoftwareDocumentDesignUrl} placeholder="Link do Google Drive" placeholderTextColor={theme.muted} autoCapitalize="none" keyboardType="url" style={{ flex: 1, paddingVertical: 0, color: theme.text, fontFamily: fontFamily(theme.font), fontSize: 12 }} /></View></Field><ImageField label="Logo do projeto" value={logo} aspect={[1, 1]} theme={theme} onChange={setLogo} /><ImageField label="Imagem de capa" value={backgroundImage} aspect={[16, 9]} theme={theme} onChange={setBackgroundImage} /><Field label="Notas" theme={theme}><TextInput multiline value={notes} onChangeText={setNotes} placeholder="Links, decisões e informações úteis" placeholderTextColor={theme.muted} style={[field, { minHeight: 72, textAlignVertical: "top" }]} /></Field></ScrollView><View className="mt-3 flex-row items-center gap-2">{error ? <Text numberOfLines={2} style={{ color: theme.danger, fontFamily: fontFamily(theme.font) }} className="flex-1 text-[10px] font-semibold">{error}</Text> : <View className="flex-1" />}<View className="flex-row justify-end gap-2"><Action theme={theme} secondary onPress={onClose}>Cancelar</Action><Action theme={theme} onPress={() => { if (!name.trim()) { setError("Informe o nome do projeto."); return; } const category = status === "finished" ? "finished" : status === "unstarted" ? "unstarted" : "in-development"; onSave({ name: name.trim(), description: description.trim(), status, category, priority, owner: owner.trim(), dueDate: dueDate.trim(), repositoryUrl: repositoryUrl.trim(), softwareDocumentDesignUrl: softwareDocumentDesignUrl.trim(), notes, logo: logo ?? "", backgroundImage: backgroundImage ?? "", properties: project?.properties ?? [] }); }}>✓ {project ? "Salvar alterações" : "Criar projeto"}</Action></View></View></View></ProjectModalWrapper>;
+  return (
+    <ProjectModalWrapper visible={visible} theme={theme} onClose={onClose}>
+      <View className="p-5" style={{ flex: 1, flexShrink: 1 }}>
+        <View className="mb-3 h-1 w-10 self-center" style={{ backgroundColor: theme.border }} />
+        <View className="mb-4 flex-row items-center justify-between">
+          <View>
+            <Eyebrow theme={theme}>{project ? 'EDITAR PROJETO' : 'NOVO ESPAÇO DE TRABALHO'}</Eyebrow>
+            <Text style={{ color: theme.text, fontFamily: fontFamily(theme.font) }} className="mt-1 text-xl font-black">
+              {project ? 'Editar projeto' : 'Criar projeto'}
+            </Text>
+          </View>
+          <CloseButton theme={theme} onPress={onClose} />
+        </View>
+        <ScrollView
+          style={{ flex: 1 }}
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Field label="Nome do projeto" theme={theme}>
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Ex.: Lançamento do produto"
+              placeholderTextColor={theme.muted}
+              style={field}
+            />
+          </Field>
+          <Field label="Descrição" theme={theme}>
+            <TextInput
+              multiline
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Qual é o objetivo deste projeto?"
+              placeholderTextColor={theme.muted}
+              style={[field, { minHeight: 72, textAlignVertical: 'top' }]}
+            />
+          </Field>
+          <Field label="Status" theme={theme}>
+            <ChoiceRow
+              options={columns.map((column) => ({ key: column.key, label: column.label }))}
+              value={status}
+              onChange={(value) => setStatus(value as ProjectStatus)}
+              theme={theme}
+            />
+          </Field>
+          <Field label="Prioridade" theme={theme}>
+            <ChoiceRow
+              options={['Baixa', 'Média', 'Alta'].map((value) => ({ key: value, label: value }))}
+              value={priority}
+              onChange={(value) => setPriority(value as Project['priority'])}
+              theme={theme}
+            />
+          </Field>
+          <Field label="Responsável" theme={theme}>
+            <TextInput
+              value={owner}
+              onChangeText={setOwner}
+              placeholder="Nome"
+              placeholderTextColor={theme.muted}
+              style={field}
+            />
+          </Field>
+          <Field label="Data de entrega" theme={theme}>
+            <DatePickerField value={dueDate} onChange={setDueDate} theme={theme} />
+          </Field>
+          <Field label="Repositório (opcional)" theme={theme}>
+            <View
+              className="flex-row items-center gap-2"
+              style={[field, { flexDirection: 'row', alignItems: 'center' }]}
+            >
+              <AppIcon name="github" size={18} color={theme.muted} />
+              <TextInput
+                value={repositoryUrl}
+                onChangeText={setRepositoryUrl}
+                placeholder="https://github.com/usuario/projeto"
+                placeholderTextColor={theme.muted}
+                autoCapitalize="none"
+                style={{
+                  flex: 1,
+                  paddingVertical: 0,
+                  color: theme.text,
+                  fontFamily: fontFamily(theme.font),
+                  fontSize: 12
+                }}
+              />
+            </View>
+          </Field>
+          <Field label="Software Document Design (PDF)" theme={theme}>
+            <View
+              className="flex-row items-center gap-2"
+              style={[field, { flexDirection: 'row', alignItems: 'center' }]}
+            >
+              <AppIcon name="drive" size={18} color={theme.muted} />
+              <TextInput
+                value={softwareDocumentDesignUrl}
+                onChangeText={setSoftwareDocumentDesignUrl}
+                placeholder="Link do Google Drive"
+                placeholderTextColor={theme.muted}
+                autoCapitalize="none"
+                keyboardType="url"
+                style={{
+                  flex: 1,
+                  paddingVertical: 0,
+                  color: theme.text,
+                  fontFamily: fontFamily(theme.font),
+                  fontSize: 12
+                }}
+              />
+            </View>
+          </Field>
+          <ImageField label="Logo do projeto" value={logo} aspect={[1, 1]} theme={theme} onChange={setLogo} />
+          <ImageField
+            label="Imagem de capa"
+            value={backgroundImage}
+            aspect={[16, 9]}
+            theme={theme}
+            onChange={setBackgroundImage}
+          />
+          <Field label="Notas" theme={theme}>
+            <TextInput
+              multiline
+              value={notes}
+              onChangeText={setNotes}
+              placeholder="Links, decisões e informações úteis"
+              placeholderTextColor={theme.muted}
+              style={[field, { minHeight: 72, textAlignVertical: 'top' }]}
+            />
+          </Field>
+        </ScrollView>
+        <View className="mt-3 flex-row items-center gap-2">
+          {error ? (
+            <Text
+              numberOfLines={2}
+              style={{ color: theme.danger, fontFamily: fontFamily(theme.font) }}
+              className="flex-1 text-[10px] font-semibold"
+            >
+              {error}
+            </Text>
+          ) : (
+            <View className="flex-1" />
+          )}
+          <View className="flex-row justify-end gap-2">
+            <Action theme={theme} secondary onPress={onClose}>
+              Cancelar
+            </Action>
+            <Action
+              theme={theme}
+              onPress={() => {
+                if (!name.trim()) {
+                  setError('Informe o nome do projeto.');
+                  return;
+                }
+                const category =
+                  status === 'finished' ? 'finished' : status === 'unstarted' ? 'unstarted' : 'in-development';
+                onSave({
+                  name: name.trim(),
+                  description: description.trim(),
+                  status,
+                  category,
+                  priority,
+                  owner: owner.trim(),
+                  dueDate: dueDate.trim(),
+                  repositoryUrl: repositoryUrl.trim(),
+                  softwareDocumentDesignUrl: softwareDocumentDesignUrl.trim(),
+                  notes,
+                  logo: logo ?? '',
+                  backgroundImage: backgroundImage ?? '',
+                  properties: project?.properties ?? []
+                });
+              }}
+            >
+              ✓ {project ? 'Salvar alterações' : 'Criar projeto'}
+            </Action>
+          </View>
+        </View>
+      </View>
+    </ProjectModalWrapper>
+  );
 }
