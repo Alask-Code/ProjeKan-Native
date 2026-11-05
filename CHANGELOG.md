@@ -9,3 +9,7 @@
 ### Removido
 
 - Removidos os arquivos auto-gerados do projeto.
+
+### Refatorado
+
+- App.tsx agora Carrega src/AppContent.tsx.
