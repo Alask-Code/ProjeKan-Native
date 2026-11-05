@@ -268,12 +268,6 @@ export default function AppContent() {
                     >
                       {item.label}
                     </Text>
-                    {active ? (
-                      <View
-                        className="absolute bottom-0.5 h-0.5 w-5"
-                        style={{ backgroundColor: theme.primary, borderRadius: theme.borderRadius }}
-                      />
-                    ) : null}
                   </Pressable>
                 );
               })}
