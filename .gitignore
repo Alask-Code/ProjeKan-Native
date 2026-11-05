@@ -3,5 +3,7 @@ android
 node_modules
 dist
 dist-vite
+nativewind-env.d.ts
+package-lock.json
 *.local
 .vscode
