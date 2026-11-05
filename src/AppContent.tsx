@@ -45,18 +45,20 @@ export default function AppContent() {
     dismiss: finishOnboarding,
     restart: restartOnboarding
   } = onboarding;
-  const projects = useNativeProjects((state) => state.projects);
-  const saveProject = useNativeProjects((state) => state.addProject);
-  const updateProject = useNativeProjects((state) => state.updateProject);
-  const deleteProject = useNativeProjects((state) => state.deleteProject);
-  const clearAllProjects = useNativeProjects((state) => state.clearAllProjects);
+  const {
+    projects,
+    addProject: saveProject,
+    updateProject,
+    deleteProject,
+    clearAllProjects,
+    importProjects,
+    moveProjectToPosition
+  } = useNativeProjects();
   const clearAllTodos = useTodoStore((state) => state.clearAllTodos);
   const lists = useTodoStore((state) => state.lists);
   const todos = useTodoStore((state) => state.todos);
   const importTodos = useTodoStore((state) => state.importTodos);
-  const importProjects = useNativeProjects((state) => state.importProjects);
   const resetTheme = useThemeStore((state) => state.resetSettings);
-  const moveProjectToPosition = useNativeProjects((state) => state.moveProjectToPosition);
   const theme = useThemeStore((state) => state.settings);
   const { showDialog, dialogModal } = useAppDialog(theme);
   const completeOnboarding = finishOnboarding;
