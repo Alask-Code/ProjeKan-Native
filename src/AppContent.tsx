@@ -54,12 +54,8 @@ export default function AppContent() {
     importProjects,
     moveProjectToPosition
   } = useNativeProjects();
-  const clearAllTodos = useTodoStore((state) => state.clearAllTodos);
-  const lists = useTodoStore((state) => state.lists);
-  const todos = useTodoStore((state) => state.todos);
-  const importTodos = useTodoStore((state) => state.importTodos);
-  const resetTheme = useThemeStore((state) => state.resetSettings);
-  const theme = useThemeStore((state) => state.settings);
+  const { clearAllTodos, lists, todos, importTodos } = useTodoStore();
+  const { resetSettings: resetTheme, settings: theme } = useThemeStore();
   const { showDialog, dialogModal } = useAppDialog(theme);
   const completeOnboarding = finishOnboarding;
   useEffect(() => {

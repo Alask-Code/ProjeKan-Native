@@ -32,8 +32,6 @@ export function SettingsModal({
   const { checkingUpdates, updateResult, checkForUpdates } = useReleaseUpdates(currentVersion);
   const {
     reminderEnabled,
-    reminderHour,
-    reminderMinute,
     loadingPreferences,
     timePickerVisible,
     setTimePickerVisible,
