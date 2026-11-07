@@ -196,7 +196,7 @@ export function SettingsModal({
               </View>
 
               <View
-                className="p-4"
+                className="p-4 mb-4"
                 style={{
                   backgroundColor: theme.surface,
                   borderColor: theme.border,

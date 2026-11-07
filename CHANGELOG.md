@@ -9,6 +9,12 @@
 ### Removido
 
 - Removidos os arquivos auto-gerados do projeto.
+- Barra dentro dos botões do navigator removidas.
+
+### Corrigido
+
+- Erro de margem na Tela Configurações.
+- Erro de borda na tela de Visão Geral.
 
 ### Refatorado
 
